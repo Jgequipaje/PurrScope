@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import styled from "styled-components";
 import { useTheme, tokens } from "@/lib/theme";
@@ -13,12 +13,24 @@ const LABELS: Record<Mode, string> = {
 
 const Wrap = styled.div`
   display: flex;
-  gap: 6px;
+  flex-direction: column;
+  gap: 8px;
   margin-bottom: 1.25rem;
+
+  @media (min-width: 480px) {
+    flex-direction: row;
+    gap: 6px;
+  }
 `;
 
-const Tab = styled.button<{ $active: boolean; $bg: string; $activeBg: string; $color: string; $activeColor: string; $border: string; $disabled: boolean }>`
-  padding: 6px 16px;
+const Tab = styled.button<{
+  $active: boolean;
+  $bg: string; $activeBg: string;
+  $color: string; $activeColor: string;
+  $border: string; $disabled: boolean;
+}>`
+  width: 100%;
+  padding: 10px 16px;
   font-size: 14px;
   font-weight: 600;
   border-radius: 8px;
@@ -31,6 +43,11 @@ const Tab = styled.button<{ $active: boolean; $bg: string; $activeBg: string; $c
   transition: background 0.15s, opacity 0.15s, transform 0.1s;
   &:not([disabled]):hover { opacity: 0.85; }
   &:not([disabled]):active { transform: scale(0.97); }
+
+  @media (min-width: 480px) {
+    width: auto;
+    padding: 6px 16px;
+  }
 `;
 
 export default function ModeTabs({ mode, onChange, disabled = false }: Props) {

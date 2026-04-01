@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import styled from "styled-components";
 import { RiMoonLine, RiSunLine } from "react-icons/ri";
 import ModeTabs from "@/components/ModeTabs";
 import ManualInput from "@/components/ManualInput";
 import SitemapInput from "@/components/SitemapInput";
 import SitemapDebug from "@/components/SitemapDebug";
+import ScopeSelector from "@/components/ScopeSelector";
 import ResultsTable from "@/components/ResultsTable";
 import RecentSearches from "@/components/RecentSearches";
 import { useTheme, tokens } from "@/lib/theme";
@@ -30,14 +31,20 @@ const MAX_MANUAL_URLS = 10;
 const Main = styled.main<{ $color: string }>`
   max-width: 1100px;
   margin: 0 auto;
-  padding: 2.5rem 1.5rem;
+  padding: 1.5rem 1rem;
   color: ${(p) => p.$color};
+
+  @media (min-width: 640px) {
+    padding: 2.5rem 1.5rem;
+  }
 `;
 
 const HeaderRow = styled.div`
   display: flex;
+  flex-direction: row;
   justify-content: space-between;
   align-items: flex-start;
+  gap: 12px;
   margin-bottom: 1.75rem;
 `;
 
@@ -65,6 +72,8 @@ const ThemeToggle = styled.button<{ $border: string; $bg: string; $color: string
   background: ${(p) => p.$bg};
   color: ${(p) => p.$color};
   flex-shrink: 0;
+  align-self: flex-start;
+  white-space: nowrap;
   font-family: inherit;
   display: inline-flex;
   align-items: center;
@@ -81,6 +90,62 @@ const ErrorBanner = styled.div<{ $bg: string; $color: string }>`
   border-radius: 8px;
   margin-bottom: 1.5rem;
   font-size: 14px;
+  word-break: break-word;
+  overflow-wrap: break-word;
+`;
+
+const ErrorDetails = styled.details`
+  margin-top: 6px;
+  font-size: 12px;
+  opacity: 0.8;
+  & summary {
+    cursor: pointer;
+    user-select: none;
+    display: inline;
+  }
+  & p {
+    margin: 6px 0 0;
+    word-break: break-all;
+    overflow-wrap: break-word;
+    line-height: 1.5;
+  }
+`;
+
+/** Turns a raw error message into a friendly one-liner + optional detail block. */
+function FriendlyError({ message, bg, color }: { message: string; bg: string; color: string }) {
+  const isNoSitemap = message.startsWith("No sitemap found");
+  const friendly = isNoSitemap ? "No sitemap found for this URL." : message;
+  const detail = isNoSitemap ? message : null;
+
+  return (
+    <ErrorBanner $bg={bg} $color={color}>
+      {friendly}
+      {detail && (
+        <ErrorDetails>
+          <summary>Show details</summary>
+          <p>{detail}</p>
+        </ErrorDetails>
+      )}
+    </ErrorBanner>
+  );
+}
+
+// Summary bar shown between crawl and scan phases
+const CrawlSummary = styled.div<{ $bg: string; $border: string; $color: string }>`
+  background: ${(p) => p.$bg};
+  border: 1px solid ${(p) => p.$border};
+  border-radius: 8px;
+  padding: 8px 14px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: ${(p) => p.$color};
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+`;
+
+const SummaryItem = styled.span<{ $accent: string }>`
+  & strong { color: ${(p) => p.$accent}; }
 `;
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -92,10 +157,17 @@ export default function Home() {
 
   const [manualInput, setManualInput] = useState("");
   const [sitemapInput, setSitemapInput] = useState("");
+
+  // ── Phase 1: discovery state ───────────────────────────────────────────────
+  // crawlResult is the source of truth for all discovered URLs.
+  // It is only replaced when the user crawls a new URL — never on filter changes.
+  const [crawlResult, setCrawlResult] = useState<SitemapCrawlResult | null>(null);
+
+  // ── Phase 2: filter state ──────────────────────────────────────────────────
+  // These drive liveFilter (derived via useMemo) without touching crawlResult.
   const [scope, setScope] = useState<ScanScope>("all");
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
   const [scanLimit, setScanLimit] = useState<number | "">("");
-  const [crawlResult, setCrawlResult] = useState<SitemapCrawlResult | null>(null);
 
   const [isCrawling, setIsCrawling] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
@@ -122,8 +194,35 @@ export default function Home() {
   // Session counter — incremented on each new scan so stale responses are ignored
   const scanSessionRef = useRef(0);
 
-  // True whenever any async process is running — used to lock mode tabs + crawl button
   const isProcessing = isCrawling || isScanning;
+
+  // ── Derived state ──────────────────────────────────────────────────────────
+  // liveFilter is computed instantly from crawlResult + scope + selectedGroups.
+  // No useEffect, no setState — changing scope or exclusions updates this in one render.
+  const dynamicGroups = useMemo(
+    () => extractDynamicGroups(crawlResult?.sitemapUrls ?? []),
+    [crawlResult]
+  );
+
+  const liveFilter = useMemo(() => {
+    if (!crawlResult) return null;
+    return computeClientFilter(
+      crawlResult.pageEntries,
+      scope,
+      scope === "dynamic" ? selectedGroups : []
+    );
+  }, [crawlResult, scope, selectedGroups]);
+
+  const availableCount = liveFilter?.totalAfterFiltering ?? 0;
+
+  // Clamp scanLimit when the filtered count shrinks (e.g. scope change)
+  useEffect(() => {
+    if (scanLimit !== "" && availableCount > 0 && scanLimit > availableCount) {
+      setScanLimit(availableCount);
+    } else if (availableCount === 0 && scanLimit !== "") {
+      setScanLimit("");
+    }
+  }, [availableCount]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Load history after mount to avoid SSR mismatch
   const [history, setHistory] = useState<HistoryEntry[]>([]);
@@ -135,15 +234,17 @@ export default function Home() {
   }
 
   function handleModeChange(next: Mode) {
-    // Block mode switching while any process is running
     if (isProcessing) return;
     setMode(next);
+    // Only clear crawl state on mode switch, not on filter changes
     setCrawlResult(null);
     setResults([]);
     setError(null);
   }
 
-  function clearPreview() {
+  // Called only when the sitemap URL input changes — clears crawl + scan state
+  // so stale results from a previous URL don't linger.
+  function handleSitemapUrlChange() {
     setCrawlResult(null);
     setResults([]);
     setError(null);
@@ -153,6 +254,7 @@ export default function Home() {
     setImprResults([]);
     setPipelineUsed(null);
     setBenchmarkSnapshot(null);
+    setSelectedGroups([]);
   }
 
   function resetBenchmark() {
@@ -178,7 +280,7 @@ export default function Home() {
     setScanTimer({ duration: null, status: null });
     setIsScanning(true); setResults([]); setError(null);
     try {
-      const { results: data } = await callScanApi(urls, undefined, abort.signal);
+      const { results: data } = await callScanApi(urls, undefined, abort.signal, "/api/scan-improved", performanceMode);
       if (sessionId === scanSessionRef.current && !abort.signal.aborted) {
         setResults(data);
         setScanTimer({ duration: Date.now() - (scanStartRef.current ?? Date.now()), status: "completed" });
@@ -203,7 +305,9 @@ export default function Home() {
     scanAbortRef.current?.abort();
   }
 
-  // ── Sitemap crawl ──────────────────────────────────────────────────────────
+  // ── Sitemap crawl (Phase 1) ────────────────────────────────────────────────
+  // Fetches all URLs once and stores them in crawlResult.
+  // Always crawls with scope="all" so the full dataset is available for client-side filtering.
 
   async function handleDiscover() {
     if (!sitemapInput) return;
@@ -219,7 +323,7 @@ export default function Home() {
       const res = await fetch("/api/sitemap", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // Always crawl without exclusions — filtering is done client-side
+        // Always fetch all URLs — scope filtering is done client-side from this result
         body: JSON.stringify({ url: crawlUrl, scope: "all", excludePatterns: [] }),
         signal: abort.signal,
       });
@@ -240,25 +344,29 @@ export default function Home() {
     crawlAbortRef.current?.abort();
   }
 
-  // ── Scan discovered pages ──────────────────────────────────────────────────
+  // ── Scan discovered pages (Phase 2) ───────────────────────────────────────
+  // Uses liveFilter (derived from current scope + exclusions) as the URL list.
+  // A benchmark snapshot is frozen at scan-start so both pipelines use identical inputs.
 
-  async function handleScanDiscovered(pipeline: ScanPipeline = "previous") {
-    if (!crawlResult) return;
+  async function handleScanDiscovered(pipeline: ScanPipeline = "improved") {
+    if (!crawlResult || !liveFilter) return;
 
-    // Compute the live filter at scan time — reflects current scope + exclusions
-    const liveFilter = computeClientFilter(crawlResult.pageEntries, scope, selectedGroups);
     const limit = scanLimit !== "" ? scanLimit : undefined;
 
-    // Create or reuse the benchmark snapshot — both pipelines must use the same input
-    const snapshot = benchmarkSnapshot ?? createSnapshot(
-      liveFilter.includedUrls,
-      scope,
-      limit ?? null,
-      selectedGroups
-    );
-    if (!benchmarkSnapshot) setBenchmarkSnapshot(snapshot);
+    // Reuse the existing snapshot ONLY if it matches the current filter config —
+    // this ensures benchmark comparisons use identical inputs across both pipelines.
+    // If scope, exclusions, or limit changed, always create a fresh snapshot.
+    const snapshotMatches = benchmarkSnapshot
+      && benchmarkSnapshot.scanScope === scope
+      && benchmarkSnapshot.scanLimit === (limit ?? null)
+      && JSON.stringify(benchmarkSnapshot.exclusions) === JSON.stringify(selectedGroups);
 
-    // Always use the frozen snapshot URLs so both pipelines scan identical inputs
+    const snapshot = snapshotMatches
+      ? benchmarkSnapshot!
+      : createSnapshot(liveFilter.includedUrls, scope, limit ?? null, selectedGroups);
+
+    if (!snapshotMatches) setBenchmarkSnapshot(snapshot);
+
     const urlsToScan = snapshot.urls;
 
     const abort = new AbortController();
@@ -277,7 +385,6 @@ export default function Home() {
         setPipelineUsed(pipeline);
         setScanTimer({ duration: Date.now() - (scanStartRef.current ?? Date.now()), status: "completed" });
 
-        // Record benchmark metrics for this pipeline run
         const metrics = computeMetrics(pipeline, data, durationMs || (Date.now() - (scanStartRef.current ?? Date.now())), {
           urlsQueued: snapshot.queueSize,
           scanScope: scope,
@@ -287,13 +394,8 @@ export default function Home() {
           performanceMode: pipeline === "improved" ? performanceMode : null,
           runMode: benchmarkRunMode,
         });
-        if (pipeline === "previous") {
-          setBenchPrevious(metrics);
-          setPrevResults(data);
-        } else {
-          setBenchImproved(metrics);
-          setImprResults(data);
-        }
+        if (pipeline === "previous") { setBenchPrevious(metrics); setPrevResults(data); }
+        else { setBenchImproved(metrics); setImprResults(data); }
       }
     } catch (e) {
       if ((e as Error).name === "AbortError") {
@@ -315,7 +417,7 @@ export default function Home() {
     if (isProcessing) return;
     if (entry.type === "url") { setMode("sitemap"); setSitemapInput(entry.value); }
     else { setMode("manual"); setManualInput(entry.value); }
-    clearPreview();
+    handleSitemapUrlChange();
   }
 
   function handleHistoryClear() {
@@ -324,7 +426,7 @@ export default function Home() {
   }
 
   async function callScanApi(
-    urls: string[], limit?: number, signal?: AbortSignal, route = "/api/scan", perfMode?: PerformanceMode, runMode?: BenchmarkRunMode
+    urls: string[], limit?: number, signal?: AbortSignal, route = "/api/scan-improved", perfMode?: PerformanceMode, runMode?: BenchmarkRunMode
   ): Promise<{ results: ScanResult[]; durationMs: number }> {
     const res = await fetch(route, {
       method: "POST",
@@ -345,28 +447,13 @@ export default function Home() {
     };
   }
 
-  const dynamicGroups = extractDynamicGroups(crawlResult?.sitemapUrls ?? []);
-  const liveFilter = crawlResult
-    ? computeClientFilter(crawlResult.pageEntries, scope, scope === "dynamic" ? selectedGroups : [])
-    : null;
-
-  // Clamp scanLimit whenever the available URL count shrinks
-  const availableCount = liveFilter?.totalAfterFiltering ?? 0;
-  useEffect(() => {
-    if (scanLimit !== "" && availableCount > 0 && scanLimit > availableCount) {
-      setScanLimit(availableCount);
-    } else if (availableCount === 0 && scanLimit !== "") {
-      setScanLimit("");
-    }
-  }, [availableCount]); // eslint-disable-line react-hooks/exhaustive-deps
-
   return (
     <Main $color={t.text}>
       <HeaderRow>
         <HeaderText>
-          <PageTitle>SEO Metadata Checker</PageTitle>
+          <PageTitle>PurrScope</PageTitle>
           <PageSubtitle $color={t.textMuted}>
-            Discover pages via sitemap and scan title + meta description for SEO issues.
+            Automated SEO &amp; Compliance QA
           </PageSubtitle>
         </HeaderText>
         <ThemeToggle onClick={toggle} title="Toggle light/dark mode" $border={t.border} $bg={t.bgMuted} $color={t.text}>
@@ -383,20 +470,49 @@ export default function Home() {
       )}
 
       {mode === "sitemap" && (
-        <SitemapInput
-          value={sitemapInput} onChange={setSitemapInput} onScan={handleDiscover} loading={isCrawling}
-          onCancel={handleCancelCrawl}
-          isScanning={isScanning}
-          scope={scope} onScopeChange={(s) => { setScope(s); if (s !== "dynamic") setSelectedGroups([]); }}
-          dynamicGroups={dynamicGroups}
-          selectedGroups={selectedGroups}
-          onSelectedGroupsChange={setSelectedGroups}
-          onInputChange={clearPreview}
-        />
+        <>
+          {/* Phase 1: URL input + crawl button only — no scope controls here */}
+          <SitemapInput
+            value={sitemapInput}
+            onChange={setSitemapInput}
+            onScan={handleDiscover}
+            loading={isCrawling}
+            onCancel={handleCancelCrawl}
+            isScanning={isScanning}
+            onInputChange={handleSitemapUrlChange}
+          />
+
+          {/* Phase 2: filter controls — only shown after a successful crawl.
+              Scope and exclusion changes update liveFilter instantly via useMemo. */}
+          {crawlResult && (
+            <>
+              {/* Crawl summary — persists across scope/exclusion changes */}
+              <CrawlSummary $bg={t.bgSubtle} $border={t.border} $color={t.textMuted}>
+                <SummaryItem $accent={t.infoText}>
+                  <strong>{crawlResult.pageCount}</strong> pages discovered
+                </SummaryItem>
+                <SummaryItem $accent={t.passText}>
+                  <strong>{availableCount}</strong> pages selected for scanning
+                </SummaryItem>
+              </CrawlSummary>
+
+              {/* Scope selector + dynamic exclusions — purely client-side filtering */}
+              <ScopeSelector
+                scope={scope}
+                onScopeChange={(s) => { setScope(s); if (s !== "dynamic") setSelectedGroups([]); }}
+                dynamicGroups={dynamicGroups}
+                selectedGroups={selectedGroups}
+                onSelectedGroupsChange={setSelectedGroups}
+                disabled={isProcessing}
+              />
+            </>
+          )}
+        </>
       )}
 
-      {error && <ErrorBanner $bg={t.failBg} $color={t.failText}>{error}</ErrorBanner>}
+      {error && <FriendlyError message={error} bg={t.failBg} color={t.failText} />}
 
+      {/* SitemapDebug stays visible as long as crawlResult exists — filter changes don't hide it */}
       {mode === "sitemap" && crawlResult && liveFilter && (
         <SitemapDebug
           crawl={crawlResult}

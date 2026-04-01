@@ -52,9 +52,14 @@ const ScanButton = styled.button<{ $disabled: boolean }>`
   cursor: ${(p) => (p.$disabled ? "not-allowed" : "pointer")};
   margin-bottom: 1.75rem;
   font-family: inherit;
+  width: 100%;
   transition: background 0.15s, opacity 0.15s, transform 0.1s;
   &:not(:disabled):hover { background: #1d4ed8; }
   &:not(:disabled):active { transform: scale(0.97); }
+
+  @media (min-width: 540px) {
+    width: auto;
+  }
 `;
 
 const CancelButton = styled.button`
@@ -68,12 +73,18 @@ const CancelButton = styled.button`
   cursor: pointer;
   margin-bottom: 1.75rem;
   font-family: inherit;
+  width: 100%;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 5px;
   transition: background 0.15s, transform 0.1s;
   &:hover { background: #fee2e2; }
   &:active { transform: scale(0.97); }
+
+  @media (min-width: 540px) {
+    width: auto;
+  }
 `;
 
 export default function ManualInput({ value, onChange, onScan, onCancel, loading, isProcessing }: Props) {
@@ -97,7 +108,7 @@ export default function ManualInput({ value, onChange, onScan, onCancel, loading
         $text={t.text}
       />
       <Counter $warn={atLimit} $warnColor={t.failText} $mutedColor={t.textFaint}>
-        {count} / {MAX_URLS} URLs{atLimit && " — limit reached"}
+        {count} / {MAX_URLS} URLs{atLimit && " — limit reached, remove a URL to add another"}
       </Counter>
       {loading ? (
         <CancelButton onClick={onCancel} type="button">
@@ -105,7 +116,7 @@ export default function ManualInput({ value, onChange, onScan, onCancel, loading
         </CancelButton>
       ) : (
         <ScanButton onClick={onScan} disabled={disabled} $disabled={disabled}>
-          Scan Pages
+          Start Scan
         </ScanButton>
       )}
     </>

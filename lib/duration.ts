@@ -28,5 +28,5 @@ export function executionLabel(
 ): string {
   if (status === "completed") return `${processName} in ${formattedDuration}`;
   if (status === "failed") return `Failed after ${formattedDuration}`;
-  return `Canceled after ${formattedDuration}`;
+  return `Stopped after ${formattedDuration}`;
 }

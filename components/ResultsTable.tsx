@@ -394,7 +394,7 @@ export default function ResultsTable({ results, scanTimer }: Props) {
             {visible.length === 0 && (
               <tr>
                 <Td colSpan={6} $border={t.border} $color={t.textFaint} $align="center" style={{ padding: "2rem" }}>
-                  No failed pages — everything looks good.
+                  No issues detected — this filter is clear.
                 </Td>
               </tr>
             )}
@@ -406,8 +406,8 @@ export default function ResultsTable({ results, scanTimer }: Props) {
         <IconWrap>
           {allPass ? <RiCheckboxCircleFill size={14} /> : <RiCloseCircleFill size={14} />}
           {allPass
-            ? `All ${results.length} pages passed.`
-            : `${failCount} of ${results.length} pages have issues.`}
+            ? `Scan complete — all ${results.length} pages passed.`
+            : `${failCount} of ${results.length} pages need attention.`}
         </IconWrap>
         {scanTimer?.duration != null && scanTimer.status != null && (
           <ExecutionBadge $color={t.textMuted}>

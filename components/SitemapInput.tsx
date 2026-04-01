@@ -1,12 +1,9 @@
-"use client";
+﻿"use client";
 
 import { RiInformationLine, RiCloseLine } from "react-icons/ri";
 import styled, { keyframes } from "styled-components";
 import { useTheme, tokens } from "@/lib/theme";
 import { isValidUrl, urlValidationHint, getBaseUrlForSitemapCrawl } from "@/lib/urlValidation";
-import ScopeSelector from "@/components/ScopeSelector";
-import type { ScanScope } from "@/lib/types";
-import type { DynamicGroup } from "@/lib/sitemapGroups";
 
 type Props = {
   value: string;
@@ -14,23 +11,26 @@ type Props = {
   onScan: () => void;
   onCancel: () => void;
   loading: boolean;
-  isScanning: boolean;  // scan in progress — lock the crawl button
-  scope: ScanScope;
-  onScopeChange: (s: ScanScope) => void;
-  dynamicGroups?: DynamicGroup[];
-  selectedGroups?: string[];
-  onSelectedGroupsChange?: (urls: string[]) => void;
+  isScanning: boolean;
   onInputChange?: () => void;
 };
 
 const Row = styled.div`
   display: flex;
+  flex-direction: column;
   gap: 8px;
   margin-bottom: 4px;
+  @media (min-width: 540px) {
+    flex-direction: row;
+  }
 `;
 
-const UrlInput = styled.input<{ $border: string; $bg: string; $text: string; $invalid: boolean; $invalidBorder: string }>`
+const UrlInput = styled.input<{
+  $border: string; $bg: string; $text: string;
+  $invalid: boolean; $invalidBorder: string;
+}>`
   flex: 1;
+  width: 100%;
   padding: 0.6rem 0.9rem;
   font-size: 15px;
   border: 1px solid ${(p) => (p.$invalid ? p.$invalidBorder : p.$border)};
@@ -40,10 +40,7 @@ const UrlInput = styled.input<{ $border: string; $bg: string; $text: string; $in
   font-family: inherit;
   outline: none;
   transition: border-color 0.15s, opacity 0.15s;
-  &:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-  }
+  &:disabled { opacity: 0.55; cursor: not-allowed; }
 `;
 
 const CrawlButton = styled.button<{ $disabled: boolean }>`
@@ -56,11 +53,15 @@ const CrawlButton = styled.button<{ $disabled: boolean }>`
   border-radius: 8px;
   cursor: ${(p) => (p.$disabled ? "not-allowed" : "pointer")};
   white-space: nowrap;
+  width: 100%;
   font-family: inherit;
   opacity: ${(p) => (p.$disabled ? 0.65 : 1)};
   transition: background 0.15s, opacity 0.15s, transform 0.1s;
   &:not(:disabled):hover { background: #1d4ed8; }
   &:not(:disabled):active { transform: scale(0.97); }
+  @media (min-width: 540px) {
+    width: auto;
+  }
 `;
 
 const CancelButton = styled.button`
@@ -73,13 +74,18 @@ const CancelButton = styled.button`
   border-radius: 8px;
   cursor: pointer;
   white-space: nowrap;
+  width: 100%;
   font-family: inherit;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 5px;
   transition: background 0.15s, transform 0.1s;
   &:hover { background: #fee2e2; }
   &:active { transform: scale(0.97); }
+  @media (min-width: 540px) {
+    width: auto;
+  }
 `;
 
 const ValidationHint = styled.p<{ $color: string }>`
@@ -119,14 +125,6 @@ const InfoText = styled.span<{ $color: string }>`
   line-height: 1.5;
 `;
 
-const InfoLabel = styled.span`
-  font-weight: 600;
-`;
-
-const InfoUrl = styled.span`
-  font-weight: 500;
-`;
-
 const Hint = styled.p<{ $color: string }>`
   font-size: 12px;
   color: ${(p) => p.$color};
@@ -135,22 +133,16 @@ const Hint = styled.p<{ $color: string }>`
 `;
 
 export default function SitemapInput({
-  value, onChange, onScan, onCancel, loading, isScanning,
-  scope, onScopeChange,
-  dynamicGroups, selectedGroups, onSelectedGroupsChange,
-  onInputChange,
+  value, onChange, onScan, onCancel, loading, isScanning, onInputChange,
 }: Props) {
   const { theme } = useTheme();
   const t = tokens[theme];
 
   const valid = isValidUrl(value);
-  // Disabled when: crawling, scanning (another process active), or URL invalid
   const disabled = loading || isScanning || !valid;
   const hint = value.trim() ? urlValidationHint(value) : null;
-
   const baseUrl = valid ? getBaseUrlForSitemapCrawl(value) : null;
   const hasPath = baseUrl !== null && value.trim().replace(/\/$/, "") !== baseUrl.replace(/\/$/, "");
-  const rootNote = hasPath ? true : false;
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     onChange(e.target.value);
@@ -184,35 +176,22 @@ export default function SitemapInput({
         )}
       </Row>
 
-      {/* Inline validation hint — only shown when input is non-empty and invalid */}
-      <ValidationHint $color={t.failText}>
-        {hint ?? ""}
-      </ValidationHint>
+      <ValidationHint $color={t.failText}>{hint ?? ""}</ValidationHint>
 
-      {/* Root note — shown when user pasted a page URL with a path */}
-      {rootNote && (
+      {hasPath && (
         <InfoCallout $bg={t.infoBg} $border={t.infoBorder}>
           <InfoIcon $color={t.infoText}><RiInformationLine size={14} /></InfoIcon>
           <InfoText $color={t.infoText}>
-            <InfoLabel>Sitemap crawl uses the site root:</InfoLabel>{" "}
-            <InfoUrl>{baseUrl}</InfoUrl>
+            <strong>Sitemap crawl uses the site root:</strong>{" "}
+            <span style={{ fontWeight: 500 }}>{baseUrl}</span>
           </InfoText>
         </InfoCallout>
       )}
 
       <Hint $color={t.textFaint}>
-        Tries <code>/sitemap.xml</code> then <code>/sitemap_index.xml</code>.
+        Tries /sitemap.xml then /sitemap_index.xml.
         After discovery you can review the filtered pages before scanning.
       </Hint>
-
-      <ScopeSelector
-        scope={scope}
-        onScopeChange={(s) => { onScopeChange(s); onInputChange?.(); }}
-        dynamicGroups={dynamicGroups}
-        selectedGroups={selectedGroups}
-        onSelectedGroupsChange={onSelectedGroupsChange}
-        disabled={loading || isScanning}
-      />
     </>
   );
 }

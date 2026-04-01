@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
 
@@ -10,19 +10,41 @@ const ThemeContext = createContext<{ theme: Theme; toggle: () => void }>({
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  // Always start with "dark" for SSR to avoid hydration mismatch.
+  // The blocking script in <head> has already painted the correct background.
   const [theme, setTheme] = useState<Theme>("dark");
 
-  // Load from localStorage on mount
+  // mounted gates the render so styled-components never paints with wrong tokens.
+  // The html/body background is already correct from the inline script, so the
+  // user sees no flash — just a single correct paint once mounted is true.
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
     const saved = localStorage.getItem("theme") as Theme | null;
-    if (saved === "dark" || saved === "light") setTheme(saved);
+    const resolved: Theme = (saved === "light" || saved === "dark") ? saved : "dark";
+    setTheme(resolved);
+    document.documentElement.setAttribute("data-theme", resolved);
+    setMounted(true);
+    // Enable CSS transitions only after first correct paint
+    document.body.classList.add("theme-ready");
   }, []);
 
-  // Persist and apply to <html> element
+  // Keep localStorage + data-theme in sync on every subsequent change
   useEffect(() => {
+    if (!mounted) return;
     localStorage.setItem("theme", theme);
     document.documentElement.setAttribute("data-theme", theme);
-  }, [theme]);
+  }, [theme, mounted]);
+
+  // Before mount: render children hidden — the html/body background from the
+  // blocking script is already showing the correct color, so this is invisible.
+  if (!mounted) {
+    return (
+      <ThemeContext.Provider value={{ theme, toggle: () => {} }}>
+        <div style={{ visibility: "hidden" }}>{children}</div>
+      </ThemeContext.Provider>
+    );
+  }
 
   return (
     <ThemeContext.Provider value={{ theme, toggle: () => setTheme((t) => t === "light" ? "dark" : "light") }}>

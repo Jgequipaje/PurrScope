@@ -1,19 +1,21 @@
-# SEO Metadata Checker
+# PurrScope
 
-An internal QA tool for auditing page titles and meta descriptions across a site. Paste URLs manually or point it at a sitemap — it scans each page and flags anything outside the recommended character ranges.
+Automated SEO & Compliance QA — scan page titles and meta descriptions across any site, flag issues, and export results.
 
-## Features
+## Current Features
 
 - **Manual mode** — paste up to 10 URLs and scan them directly
 - **Sitemap mode** — enter a site URL, auto-discover all pages via sitemap, then scan
 - **Scope filtering** — scan all pages, static-only, or dynamic-only (based on source sitemap)
 - **Dynamic group exclusion** — exclude specific `-dpages.xml` sitemap groups from a scan
-- **Dual pipeline** — run the previous (sequential) or improved (concurrent) scan engine and compare results side-by-side
-- **Benchmark mode** — compare both pipelines on identical inputs with cold/warm cache runs
-- **Performance modes** — Safe / Balanced / Fast concurrency presets for the improved pipeline
 - **Scan limit** — cap the number of URLs scanned per run
 - **Recent searches** — history of past manual inputs and sitemap URLs
-- **Dark / light theme** — persisted to `localStorage`, defaults to dark
+- **Dark / light theme** — persisted to `localStorage`, defaults to dark, no flash on load
+- **Responsive layout** — works on mobile, tablet, and desktop
+- **Friendly error messages** — "No sitemap found" with expandable technical detail
+- **Dual pipeline** (internal) — improved concurrent engine + legacy sequential engine kept in reserve
+- **Benchmark mode** (internal) — compare both pipelines on identical inputs with cold/warm cache runs
+- **Performance mode selector** (internal) — Safe / Balanced / Fast concurrency presets
 
 ## SEO Rules
 
@@ -24,24 +26,91 @@ An internal QA tool for auditing page titles and meta descriptions across a site
 
 Pages are classified as `success`, `missing`, `scan_error`, or `Blocked (automation)`.
 
+---
+
+## Pre-Deployment Checklist
+
+Before going live, clean up the internal/developer tooling that end users don't need.
+
+### Remove from UI
+
+| What | Where | Why |
+|---|---|---|
+| Performance Mode selector (Safe / Balanced / Fast) | `components/PerformanceModeSelector.tsx`, `components/SitemapDebug.tsx` | Users don't understand concurrency — hardcode `balanced` |
+| Run mode toggle (Cold / Warm) | `components/SitemapDebug.tsx` | Benchmark tooling, not a user feature |
+| Reset Benchmark button | `components/SitemapDebug.tsx` | Goes with benchmark mode |
+| Benchmark Comparison Table | `components/BenchmarkComparisonTable.tsx` | Internal pipeline comparison only |
+| FilterDebug panel | `components/FilterDebug.tsx`, inside `SitemapDebug` | Internal filter breakdown, replace with summary bar |
+| "Discovery Results" debug section | `components/SitemapDebug.tsx` | Simplify to counts + scan limit + Start Scan only |
+
+### Keep but simplify
+
+| What | Action |
+|---|---|
+| Scan pipeline | Keep improved pipeline only, remove Previous Process button (already done) |
+| `SitemapDebug` | Strip to: discovered count, selected count, scan limit input, Start Scan button |
+| Crawl summary bar | Already clean — "X pages discovered / Y pages selected for scanning" |
+
+### Code to delete after UI cleanup
+
+```
+components/BenchmarkComparisonTable.tsx
+components/FilterDebug.tsx
+components/PerformanceModeSelector.tsx
+scan/benchmarkTypes.ts
+scan/benchmarkUtils.ts
+```
+
+Keep these (server-side only, no user impact):
+```
+scan/pipelines/previousProcess.ts   ← reserve, not exposed in UI
+scan/pipelines/improvedProcess.ts   ← active pipeline
+scan/scanRunner.ts
+app/api/scan/route.ts               ← reserve route
+app/api/scan-improved/route.ts      ← active route
+```
+
+### State to remove from `app/page.tsx`
+
+- `benchmarkRunMode`, `setBenchmarkRunMode`
+- `benchmarkSnapshot`, `setBenchmarkSnapshot`
+- `benchPrevious`, `setBenchPrevious`
+- `benchImproved`, `setBenchImproved`
+- `prevResults`, `setPrevResults`
+- `imprResults`, `setImprResults`
+- `performanceMode` state + `setPerformanceMode` (replace with constant `"balanced"`)
+- All `computeMetrics` / `createSnapshot` calls
+- `BenchmarkComparisonTable` render block
+
+### Final user-facing flow after cleanup
+
+1. Choose **Manual URLs** or **Sitemap Crawl**
+2. Enter URL(s)
+3. _(Sitemap only)_ Crawl → see pages discovered → choose scope / exclusions → set optional limit
+4. Hit **Start Scan**
+5. Review results table — Pass/Fail per page, expandable detail rows
+6. Copy results to clipboard
+
+---
+
 ## Architecture
 
 ```
 app/                        Next.js App Router
   page.tsx                  Main UI — all state lives here
-  layout.tsx                Root layout, theme bootstrap, fonts
+  layout.tsx                Root layout, theme bootstrap, FOUC prevention
   api/
-    scan/route.ts           API route → previous pipeline
-    scan-improved/route.ts  API route → improved pipeline
+    scan/route.ts           API route → previous pipeline (reserve)
+    scan-improved/route.ts  API route → improved pipeline (active)
     sitemap/route.ts        API route → sitemap crawler
 
 scan/                       Scan engine (server-only)
   scanRunner.ts             Pipeline selector
   types.ts                  Shared pipeline types + PerformanceMode configs
-  benchmarkTypes.ts         Benchmark snapshot + metrics types
-  benchmarkUtils.ts         Pure benchmark helpers (compute, compare, format)
+  benchmarkTypes.ts         Benchmark snapshot + metrics types (remove pre-deploy)
+  benchmarkUtils.ts         Pure benchmark helpers (remove pre-deploy)
   pipelines/
-    previousProcess.ts      Sequential pipeline (wraps lib/scanner.ts)
+    previousProcess.ts      Sequential pipeline — reserve, not exposed in UI
     improvedProcess.ts      Concurrent pipeline with browser pool + fetch-first
 
 lib/                        Shared utilities
@@ -54,21 +123,21 @@ lib/                        Shared utilities
   urlValidation.ts          URL normalisation + validation
   duration.ts               Scan timer state helpers
   entities.ts               HTML entity decoder
-  theme.tsx                 ThemeContext + design tokens
+  theme.tsx                 ThemeContext + design tokens (dark default, no FOUC)
   registry.tsx              styled-components SSR registry
 
 components/                 React UI components
-  ModeTabs.tsx              Manual / Sitemap tab switcher
+  ModeTabs.tsx              Manual / Sitemap tab switcher (responsive)
   ManualInput.tsx           URL textarea + scan button
-  SitemapInput.tsx          Sitemap URL input + scope/group controls
-  SitemapDebug.tsx          Crawl summary + pipeline/benchmark controls
-  ResultsTable.tsx          Scan results table with pass/fail highlighting
-  BenchmarkComparisonTable  Side-by-side pipeline metrics + consistency report
-  ExclusionDropdown.tsx     Dynamic group multi-select
+  SitemapInput.tsx          Sitemap URL input (crawl phase only)
   ScopeSelector.tsx         All / Static / Dynamic scope picker
-  PerformanceModeSelector   Safe / Balanced / Fast preset picker
+  ExclusionDropdown.tsx     Dynamic group multi-select
+  SitemapDebug.tsx          Discovery counts + scan controls (simplify pre-deploy)
+  ResultsTable.tsx          Scan results table with pass/fail highlighting
   RecentSearches.tsx        History list
-  FilterDebug.tsx           Filter breakdown debug panel
+  FilterDebug.tsx           Filter breakdown — remove pre-deploy
+  BenchmarkComparisonTable  Pipeline comparison — remove pre-deploy
+  PerformanceModeSelector   Concurrency preset picker — remove pre-deploy
 ```
 
 ### Scan pipeline
@@ -81,14 +150,10 @@ Each pipeline follows the same two-step strategy per URL:
 Blocked/interstitial pages (Cloudflare, login walls, bot checks) are detected by matching known phrases in the title and body text, and classified as `Blocked (automation)` without extracting SEO fields.
 
 The **improved pipeline** adds:
-- Controlled concurrency (2–6 workers depending on performance mode)
+- Controlled concurrency (4 workers at balanced mode)
 - Single browser instance shared across all pages in a run
 - Per-URL `AbortController` timeout
 - Graceful cancellation at concurrency boundaries
-
-### Benchmark system
-
-Both pipelines can be run against an identical frozen input snapshot (`BenchmarkSnapshot`) so results are directly comparable. `BenchmarkMetrics` captures timing, counts, and config for each run. `ConsistencyReport` compares title/description/status agreement between the two result sets.
 
 ## Getting Started
 
