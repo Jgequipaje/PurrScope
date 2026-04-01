@@ -1,9 +1,13 @@
-﻿"use client";
+"use client";
 
 import { RiInformationLine, RiCloseLine } from "react-icons/ri";
 import styled, { keyframes } from "styled-components";
 import { useTheme, tokens } from "@/lib/theme";
-import { isValidUrl, urlValidationHint, getBaseUrlForSitemapCrawl } from "@/lib/urlValidation";
+import {
+  isValidUrl,
+  urlValidationHint,
+  getBaseUrlForSitemapCrawl,
+} from "@/lib/urlValidation";
 
 type Props = {
   value: string;
@@ -20,14 +24,18 @@ const Row = styled.div`
   flex-direction: column;
   gap: 8px;
   margin-bottom: 4px;
+
   @media (min-width: 540px) {
     flex-direction: row;
   }
 `;
 
 const UrlInput = styled.input<{
-  $border: string; $bg: string; $text: string;
-  $invalid: boolean; $invalidBorder: string;
+  $border: string;
+  $bg: string;
+  $text: string;
+  $invalid: boolean;
+  $invalidBorder: string;
 }>`
   flex: 1;
   width: 100%;
@@ -40,7 +48,11 @@ const UrlInput = styled.input<{
   font-family: inherit;
   outline: none;
   transition: border-color 0.15s, opacity 0.15s;
-  &:disabled { opacity: 0.55; cursor: not-allowed; }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
 `;
 
 const CrawlButton = styled.button<{ $disabled: boolean }>`
@@ -57,8 +69,15 @@ const CrawlButton = styled.button<{ $disabled: boolean }>`
   font-family: inherit;
   opacity: ${(p) => (p.$disabled ? 0.65 : 1)};
   transition: background 0.15s, opacity 0.15s, transform 0.1s;
-  &:not(:disabled):hover { background: #1d4ed8; }
-  &:not(:disabled):active { transform: scale(0.97); }
+
+  &:not(:disabled):hover {
+    background: #1d4ed8;
+  }
+
+  &:not(:disabled):active {
+    transform: scale(0.97);
+  }
+
   @media (min-width: 540px) {
     width: auto;
   }
@@ -81,8 +100,15 @@ const CancelButton = styled.button`
   justify-content: center;
   gap: 5px;
   transition: background 0.15s, transform 0.1s;
-  &:hover { background: #fee2e2; }
-  &:active { transform: scale(0.97); }
+
+  &:hover {
+    background: #fee2e2;
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+
   @media (min-width: 540px) {
     width: auto;
   }
@@ -96,8 +122,14 @@ const ValidationHint = styled.p<{ $color: string }>`
 `;
 
 const fadeIn = keyframes`
-  from { opacity: 0; transform: translateY(-3px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 `;
 
 const InfoCallout = styled.div<{ $bg: string; $border: string }>`
@@ -133,7 +165,13 @@ const Hint = styled.p<{ $color: string }>`
 `;
 
 export default function SitemapInput({
-  value, onChange, onScan, onCancel, loading, isScanning, onInputChange,
+  value,
+  onChange,
+  onScan,
+  onCancel,
+  loading,
+  isScanning,
+  onInputChange,
 }: Props) {
   const { theme } = useTheme();
   const t = tokens[theme];
@@ -142,7 +180,9 @@ export default function SitemapInput({
   const disabled = loading || isScanning || !valid;
   const hint = value.trim() ? urlValidationHint(value) : null;
   const baseUrl = valid ? getBaseUrlForSitemapCrawl(value) : null;
-  const hasPath = baseUrl !== null && value.trim().replace(/\/$/, "") !== baseUrl.replace(/\/$/, "");
+  const hasPath =
+    baseUrl !== null &&
+    value.trim().replace(/\/$/, "") !== baseUrl.replace(/\/$/, "");
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     onChange(e.target.value);
@@ -165,6 +205,7 @@ export default function SitemapInput({
           $invalid={!!hint}
           $invalidBorder={t.failText}
         />
+
         {loading ? (
           <CancelButton onClick={onCancel} type="button">
             <RiCloseLine size={15} /> Cancel
@@ -180,7 +221,9 @@ export default function SitemapInput({
 
       {hasPath && (
         <InfoCallout $bg={t.infoBg} $border={t.infoBorder}>
-          <InfoIcon $color={t.infoText}><RiInformationLine size={14} /></InfoIcon>
+          <InfoIcon $color={t.infoText}>
+            <RiInformationLine size={14} />
+          </InfoIcon>
           <InfoText $color={t.infoText}>
             <strong>Sitemap crawl uses the site root:</strong>{" "}
             <span style={{ fontWeight: 500 }}>{baseUrl}</span>
@@ -189,8 +232,9 @@ export default function SitemapInput({
       )}
 
       <Hint $color={t.textFaint}>
-        Tries /sitemap.xml then /sitemap_index.xml.
-        After discovery you can review the filtered pages before scanning.
+        PurrScope tries <code>/sitemap.xml</code> then{" "}
+        <code>/sitemap_index.xml</code>. Once discovered, you can review the
+        filtered pages before scanning.
       </Hint>
     </>
   );
