@@ -191,7 +191,7 @@ async function crawlSitemap(
  *
  * Throws a user-friendly error if no sitemap is reachable or no pages found.
  */
-export async function resolveSitemapUrls(input: string): Promise<SitemapCrawlResult> {
+export async function resolveSitemapUrls(input: string): Promise<Omit<SitemapCrawlResult, "filter">> {
   const base = input.replace(/\/$/, "");
   let rootUrl = "";
 
