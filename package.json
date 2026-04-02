@@ -8,10 +8,6 @@
     "start": "next start",
     "test": "vitest --run"
   },
-  "overrides": {
-    "react": "^19",
-    "react-dom": "^19"
-  },
   "dependencies": {
     "next": "^16.2.2",
     "react": "^19",
@@ -20,11 +16,13 @@
     "styled-components": "^6.3.12"
   },
   "devDependencies": {
+    "@playwright/browser-chromium": "^1.44.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/styled-components": "^5.1.36",
     "fast-check": "^4.6.0",
+    "playwright": "^1.44.0",
     "typescript": "^5",
     "vitest": "^4.1.2"
   }
