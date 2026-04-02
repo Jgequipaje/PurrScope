@@ -49,8 +49,8 @@ function parseHtml(html: string): { title: string | null; description: string | 
   const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
   const title = titleMatch ? titleMatch[1].trim().replace(/\s+/g, " ") || null : null;
   const descMatch =
-    html.match(/<meta\s+name=["'"'"'description["'"'"'][^>]*content=["'"'"']([\s\S]*?)["'"'"']/i) ||
-    html.match(/<meta\s+content=["'"'"']([\s\S]*?)["'"'"'][^>]*name=["'"'"'description["'"'"']/i);
+    html.match(/<meta\s+name=["']description["'][^>]*content=["']([^"']*)["']/i) ||
+    html.match(/<meta\s+content=["']([^"']*)["'][^>]*name=["']description["']/i);
   const description = descMatch ? descMatch[1].trim() || null : null;
   const bodyMatch = html.match(/<body[^>]*>([\s\S]{0,2000})/i);
   const bodySnippet = bodyMatch
