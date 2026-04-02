@@ -16,7 +16,7 @@ export class HomePage extends BasePage {
   constructor(page: Page) {
     super(page);
     this.urlTextarea = page.locator("textarea");
-    this.urlCounter = page.locator("text=/\\d+ \\/ 10 URLs/");
+    this.urlCounter = page.getByText(/\d+ \/ 10 URLs/);
     this.startScanButton = page.getByRole("button", { name: "Start Scan" });
     this.cancelScanButton = page.getByRole("button", { name: "Cancel Scan" });
 
@@ -59,24 +59,38 @@ export class HomePage extends BasePage {
       .innerText();
   }
 
+  async getDescLengthCell(rowIndex = 0): Promise<string> {
+    // Desc. Length is the 5th cell (index 4)
+    return this.page
+      .locator("tbody tr")
+      .nth(rowIndex)
+      .locator("td")
+      .nth(4)
+      .innerText();
+  }
+
   async getFooterText(): Promise<string> {
     return this.resultsFooter.innerText();
   }
 
   async waitForScanToComplete() {
     // The footer text is mixed with an SVG icon inside a span, so we use
-    // a regex against the containing div and allow up to 60s for network latency
-    await expect(this.resultsFooter).toBeVisible({ timeout: 60_000 });
+    // a regex against the containing div and allow up to 5s for network latency
+    await expect(this.resultsFooter).toBeVisible({ timeout: 5_000 });
   }
 
   async waitForResults() {
     // Waits for any footer to appear — covers both pass and fail outcomes
     await expect(
       this.page.locator("div").filter({ hasText: /Scan complete|pages need attention/ }).last()
-    ).toBeVisible({ timeout: 60_000 });
+    ).toBeVisible({ timeout: 5_000 });
   }
 
   async getResultsFooter(): Promise<Locator> {
     return this.page.locator("div").filter({ hasText: /Scan complete|pages need attention/ }).last();
+  }
+
+  async getRowCount(): Promise<number> {
+    return this.page.locator("tbody tr").count();
   }
 }

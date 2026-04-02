@@ -23,14 +23,16 @@ Use this document to manually verify PurrScope before deployment or after making
 - Expected: all 5 are scanned, results table shows 5 rows
 
 ### TC-05 — URL limit enforcement
+> ⚠️ Automation not yet created. Implementation not yet done.
 - Input: paste 11 URLs
 - Expected: counter shows "10 / 10 URLs — limit reached, remove a URL to add another", only 10 are scanned
 
 ### TC-06 — Invalid URL input
 - Input: type `not-a-url` in the textarea
-- Expected: Start Scan button is not disabled (manual mode doesn't validate), scan runs and returns an error result for that URL
+- Expected: Start Scan button is not disabled (manual mode doesn't validate), scan runs and returns an error banner for that URL
 
 ### TC-07 — Cancel mid-scan
+> ⚠️ Automation not yet created. Implementation not yet done.
 - Input: paste 5–10 URLs, click Start Scan, immediately click Cancel Scan
 - Expected: scan stops, partial results may show, footer reflects cancelled state
 
