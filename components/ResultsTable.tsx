@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Fragment } from "react";
 import styled from "styled-components";
 import {
   RiCheckboxCircleFill, RiCloseCircleFill, RiProhibitedLine,
@@ -341,8 +341,8 @@ export default function ResultsTable({ results, scanTimer }: Props) {
               const rowFailed = isBlocked || r.titleStatus === "Fail" || r.descriptionStatus === "Fail" || r.error;
               const isOpen = openUrl === r.url;
               return (
-                <>
-                  <DataRow key={r.url} $bg={rowFailed ? t.rowFail : t.rowOk} $open={isOpen} $accentColor={t.btnActive} onClick={() => toggleRow(r.url)}>
+                <Fragment key={r.url}>
+                  <DataRow $bg={rowFailed ? t.rowFail : t.rowOk} $open={isOpen} $accentColor={t.btnActive} onClick={() => toggleRow(r.url)}>
                     <ExpandCell $border={t.border} $color={t.textFaint} $align="center">
                       {isOpen ? <RiArrowUpSLine size={16} /> : <RiArrowDownSLine size={16} />}
                     </ExpandCell>
@@ -386,8 +386,8 @@ export default function ResultsTable({ results, scanTimer }: Props) {
                       {isBlocked ? <BlockedPill t={t} /> : <Pill status={r.descriptionStatus} t={t} />}
                     </Td>
                   </DataRow>
-                  {isOpen && <ExpandedRow key={`${r.url}-exp`} r={r} colSpan={6} t={t} />}
-                </>
+                  {isOpen && <ExpandedRow r={r} colSpan={6} t={t} />}
+                </Fragment>
               );
             })}
 
