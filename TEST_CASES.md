@@ -6,194 +6,209 @@ Use this document to manually verify PurrScope before deployment or after making
 
 ## 1. Manual URL Mode
 
-### TC-01 — Single valid URL
-- Steps: Switch to Manual URLs tab, enter one valid URL (e.g. `https://example.com`), click Start Scan
-- Expected: Scan runs, results table appears with one row showing title/description pass or fail
+### TC-01 — Single valid URL, passing SEO
+- Input: one URL with a title between 45–61 chars and description between 145–161 chars
+- Expected: row shows Pass / Pass, green pills, footer says "Scan complete — all 1 pages passed"
 
-### TC-02 — Multiple valid URLs
-- Steps: Enter 3–5 valid URLs on separate lines, click Start Scan
-- Expected: All URLs appear in results table, each with their own pass/fail status
+### TC-02 — Single valid URL, failing title
+- Input: a URL where the page title is under 45 or over 61 characters
+- Expected: Title Status shows Fail (red pill), Description Status may pass
 
-### TC-03 — URL limit enforcement
-- Steps: Paste 11 or more URLs
-- Expected: Counter shows "10 / 10 URLs — limit reached, remove a URL to add another", only 10 are scanned
+### TC-03 — Single valid URL, missing meta description
+- Input: a URL where the page has no meta description tag
+- Expected: Desc. Length shows "(missing)", Desc. Status shows Fail
 
-### TC-04 — Empty input
-- Steps: Leave textarea empty, observe Start Scan button
-- Expected: Button is disabled, cannot click
+### TC-04 — Multiple URLs (up to 10)
+- Input: paste 5 URLs, one per line
+- Expected: all 5 are scanned, results table shows 5 rows
 
-### TC-05 — Cancel mid-scan
-- Steps: Start a scan with several URLs, click Cancel Scan before it finishes
-- Expected: Scan stops, timer shows "Stopped after Xs", partial results may appear
+### TC-05 — URL limit enforcement
+- Input: paste 11 URLs
+- Expected: counter shows "10 / 10 URLs — limit reached, remove a URL to add another", only 10 are scanned
 
-### TC-06 — Page with missing title and description
-- Steps: Scan a URL known to have no SEO metadata
-- Expected: Row shows "Fail" for both title and description, scanStatus shows `missing`
+### TC-06 — Invalid URL input
+- Input: type `not-a-url` in the textarea
+- Expected: Start Scan button is not disabled (manual mode doesn't validate), scan runs and returns an error result for that URL
 
-### TC-07 — Blocked page
-- Steps: Scan a URL protected by Cloudflare or a login wall
-- Expected: Row shows "Blocked" pill, no title/description extracted
+### TC-07 — Cancel mid-scan
+- Input: paste 5–10 URLs, click Start Scan, immediately click Cancel Scan
+- Expected: scan stops, partial results may show, footer reflects cancelled state
 
 ---
 
-## 2. Sitemap Crawl Mode
+## 2. Sitemap Mode — Crawl
 
 ### TC-08 — Valid site with sitemap
-- Steps: Switch to Sitemap Crawl, enter a site URL with a known sitemap (e.g. `https://vercel.com`), click Crawl Sitemap
-- Expected: Discovery Results panel appears, shows pages discovered count, scope selector appears
+- Input: enter a site URL that has `/sitemap.xml` (e.g. a WordPress or standard site)
+- Expected: crawl completes, summary shows "X pages discovered / Y pages selected for scanning"
 
-### TC-09 — Site with no sitemap
-- Steps: Enter a URL for a site with no sitemap.xml or sitemap_index.xml
-- Expected: Red error banner shows "No sitemap found for this URL." with a "Show details" toggle
+### TC-09 — Valid site URL with a path
+- Input: enter `https://example.com/blog/post-1`
+- Expected: info callout appears saying "Sitemap crawl uses the site root: https://example.com", crawl uses root
 
-### TC-10 — Invalid URL format
-- Steps: Type `not-a-url` in the sitemap input
-- Expected: Validation hint appears below input, Crawl Sitemap button stays disabled
+### TC-10 — Site with no sitemap
+- Input: enter a URL for a site that has no sitemap.xml or sitemap_index.xml
+- Expected: red error banner shows "No sitemap found for this URL." with a "Show details" toggle
 
-### TC-11 — URL with a path (e.g. a blog post URL)
-- Steps: Enter `https://example.com/blog/some-post`
-- Expected: Info callout appears saying "Sitemap crawl uses the site root: https://example.com"
+### TC-11 — Invalid URL in sitemap input
+- Input: type `example` (no protocol)
+- Expected: validation hint appears below input, Crawl Sitemap button is disabled
 
 ### TC-12 — Cancel crawl
-- Steps: Start a crawl, click Cancel before it finishes
-- Expected: Crawl stops, no results shown, no error banner
+- Input: enter a valid URL, click Crawl Sitemap, immediately click Cancel
+- Expected: crawl stops, no results shown, no error banner
+
+### TC-13 — Re-crawl clears previous results
+- Input: crawl site A, then change URL to site B and crawl again
+- Expected: previous results and discovery data are cleared, new results shown
 
 ---
 
-## 3. Scope Filtering (after crawl)
+## 3. Sitemap Mode — Scope Filtering
 
-### TC-13 — Switch scope without re-crawling
-- Steps: Crawl a site, then change Scan Scope from "All Pages" to "Static Pages Only"
-- Expected: Page counts update immediately, no new crawl triggered, Crawl Sitemap button not required again
+### TC-14 — Scope: All Pages
+- After crawl, select "All Pages" scope
+- Expected: discovered count equals selected count, all URLs included
 
-### TC-14 — Switch back to All Pages
-- Steps: After TC-13, switch scope back to "All Pages"
-- Expected: Original full count restored instantly
+### TC-15 — Scope: Static Pages Only
+- After crawl, select "Static Pages Only"
+- Expected: selected count drops to only URLs from `sitemap-static.xml`, updates instantly without re-crawling
 
-### TC-15 — Dynamic Pages scope
-- Steps: Crawl a site with dynamic sitemaps (-dpages.xml), select "Dynamic Pages"
-- Expected: Only dynamic page URLs shown in count, static pages excluded
+### TC-16 — Scope: Dynamic Pages
+- After crawl, select "Dynamic Pages"
+- Expected: selected count shows only URLs from `-dpages.xml` sitemaps, updates instantly
 
-### TC-16 — Exclude dynamic groups
-- Steps: With "Dynamic Pages" scope selected, open the exclusion dropdown and select one group
-- Expected: Page count decreases immediately to reflect the exclusion
+### TC-17 — Scope change does not re-crawl
+- After crawl, switch scope multiple times
+- Expected: no new network request to `/api/sitemap`, counts update immediately, Crawl Sitemap button is not triggered
 
-### TC-17 — Scan uses filtered URLs
-- Steps: Set scope to "Static Pages Only", then click Start Scan
-- Expected: Only static pages are scanned, results table shows only those URLs
+### TC-18 — Dynamic exclusion
+- After crawl with Dynamic scope, open "Exclude Dynamic Page Types" dropdown
+- Expected: dropdown shows available dynamic groups (e.g. Blog, Properties)
+- Select one group → selected count decreases instantly
+- Deselect → count returns to previous value
+
+### TC-19 — Exclusion persists across scope toggle
+- Select dynamic exclusions, switch to "All Pages" scope, switch back to "Dynamic Pages"
+- Expected: exclusions are cleared when leaving dynamic scope (by design)
 
 ---
 
-## 4. Scan Limit
+## 4. Sitemap Mode — Scan
 
-### TC-18 — Set a scan limit
-- Steps: After crawl, set scan limit to 5, click Start Scan
-- Expected: Only 5 pages scanned regardless of how many were discovered
+### TC-20 — Scan after crawl
+- Crawl a site, then click "Start Scan — N Pages"
+- Expected: scan runs against the currently filtered URLs, results table appears
 
-### TC-19 — Clear scan limit
-- Steps: Set a limit, then click "clear (scan all)"
-- Expected: Limit removed, placeholder shows full page count again
+### TC-21 — Scan limit
+- After crawl, set scan limit to 5, click Start Scan
+- Expected: only 5 pages are scanned regardless of how many were selected
 
-### TC-20 — Limit auto-clamps on scope change
-- Steps: Set limit to 50, then switch scope to a filter that returns only 20 pages
-- Expected: Limit automatically reduces to 20
+### TC-22 — Clear scan limit
+- Set a scan limit, then click "clear (scan all)"
+- Expected: limit input clears, "Ready to Scan" count returns to full filtered count
+
+### TC-23 — Scan limit clamped on scope change
+- Set scan limit to 50, switch to Static scope which has only 20 pages
+- Expected: scan limit automatically clamps to 20
+
+### TC-24 — Scan Pages button stays visible after scope change
+- Crawl, then change scope multiple times
+- Expected: "Start Scan" button remains visible and enabled throughout
+
+### TC-25 — Cancel scan
+- Start a scan, click Cancel Scan
+- Expected: scan stops, partial results shown, footer shows stopped state
 
 ---
 
 ## 5. Results Table
 
-### TC-21 — All pages pass
-- Steps: Scan a well-optimised site
-- Expected: Footer shows "Scan complete — all N pages passed." in green
+### TC-26 — Expand row
+- Click any row in the results table
+- Expected: row expands to show full SEO Title and Meta Description text
 
-### TC-22 — Some pages fail
-- Steps: Scan a site with known SEO issues
-- Expected: Footer shows "N of M pages need attention." in amber/red, Failed filter tab shows count
+### TC-27 — Collapse row
+- Click an expanded row again
+- Expected: row collapses
 
-### TC-23 — Filter to failed only
-- Steps: After a scan with failures, click "Failed (N)" filter tab
-- Expected: Only failing rows shown, passing rows hidden
+### TC-28 — Filter: Failed only
+- After a scan with some failures, click "Failed (N)" filter button
+- Expected: only failed rows shown, passing rows hidden
 
-### TC-24 — Expand a row
-- Steps: Click any row in the results table
-- Expected: Row expands to show full title and meta description text
+### TC-29 — Filter: All
+- While "Failed" filter is active, click "All (N)"
+- Expected: all rows shown again
 
-### TC-25 — Copy results
-- Steps: Click "Copy Results" button
-- Expected: Button briefly shows "Copied!", clipboard contains tab-separated results
+### TC-30 — Copy results
+- Click "Copy Results"
+- Expected: button briefly shows "Copied!", clipboard contains tab-separated scan data
 
-### TC-26 — Redirect shown
-- Steps: Scan a URL that redirects to another URL
-- Expected: Row shows original URL with a "redirected to" sub-line showing the final URL
+### TC-31 — Blocked page
+- Scan a URL protected by Cloudflare or a login wall
+- Expected: row shows "Blocked" pill, no title/description extracted, expand row shows explanation
+
+### TC-32 — Redirect
+- Scan a URL that redirects to another URL
+- Expected: row shows original URL, expand shows "redirected to [final URL]"
 
 ---
 
 ## 6. Theme
 
-### TC-27 — Default theme on first load
-- Steps: Clear localStorage, open the app in a fresh tab
-- Expected: App loads in dark mode with no flash of light mode
+### TC-33 — Default theme on first load
+- Open app in a fresh browser (no localStorage)
+- Expected: dark mode is applied immediately, no white flash
 
-### TC-28 — Toggle to light mode
-- Steps: Click the Light/Dark button in the top right
-- Expected: App switches to light mode, all components update correctly
+### TC-34 — Toggle theme
+- Click the Light / Dark button in the top right
+- Expected: theme switches, all components update colors
 
-### TC-29 — Theme persists on refresh
-- Steps: Switch to light mode, refresh the page
-- Expected: App loads in light mode, no dark flash
+### TC-35 — Theme persists on refresh
+- Switch to light mode, refresh the page
+- Expected: light mode loads immediately, no dark flash
+
+### TC-36 — Theme toggle stays in top right on mobile
+- Open DevTools, switch to a mobile viewport
+- Expected: theme toggle button stays compact in the top right, does not stretch full width
 
 ---
 
 ## 7. Responsive Layout
 
-### TC-30 — Mobile view (< 480px)
-- Steps: Open DevTools, set viewport to 375px wide (iPhone SE)
-- Expected: Mode tabs stack vertically, each full width; URL input and Crawl button stack vertically
+### TC-37 — Mobile: mode tabs stack
+- On a viewport under 480px wide
+- Expected: "Manual URLs" and "Sitemap Crawl" tabs stack vertically, each full width
 
-### TC-31 — Tablet view (768px)
-- Steps: Set viewport to 768px (iPad Mini)
-- Expected: Layout is usable, no horizontal overflow, buttons readable
+### TC-38 — Mobile: Crawl Sitemap button stacks
+- On a viewport under 540px wide
+- Expected: URL input and Crawl Sitemap button stack vertically, button is full width
 
-### TC-32 — Theme toggle stays top-right on mobile
-- Steps: On mobile viewport, observe the Light/Dark button
-- Expected: Button stays compact in the top-right corner, does not stretch full width
+### TC-39 — Mobile: Start Scan button full width
+- On a viewport under 540px wide
+- Expected: Start Scan button is full width
 
----
-
-## 8. Recent Searches
-
-### TC-33 — History saved after scan
-- Steps: Scan a URL, refresh the page
-- Expected: The URL appears in the Recent Searches list
-
-### TC-34 — Select from history
-- Steps: Click a recent search entry
-- Expected: Input field populates with that URL/text, mode switches accordingly
-
-### TC-35 — Clear history
-- Steps: Click "Clear" in the Recent Searches section
-- Expected: All history entries removed, list disappears
+### TC-40 — Tablet: side-by-side layout
+- On a viewport over 540px (e.g. iPad Mini landscape)
+- Expected: URL input and button are side by side, tabs are side by side
 
 ---
 
-## 9. Edge Cases
+## 8. Error Handling
 
-### TC-36 — Scan with 0 filtered pages
-- Steps: Select a scope that results in 0 pages (e.g. Dynamic on a static-only site)
-- Expected: Start Scan button is disabled, "No pages available to scan." message shown
+### TC-41 — No sitemap error is user-friendly
+- Enter a URL with no sitemap
+- Expected: banner shows "No sitemap found for this URL." — not the raw technical message
+- Click "Show details" → full technical message expands
 
-### TC-37 — Change scope after scan
-- Steps: Scan with "All Pages", then change scope to "Static Only" without re-crawling
-- Expected: Counts update, previous scan results remain visible, new scan uses new scope
+### TC-42 — Network error during scan
+- Disconnect from internet, attempt a scan
+- Expected: error banner appears with a readable message, app does not crash
 
-### TC-38 — Network error during scan
-- Steps: Start a scan, disconnect from the internet mid-scan
-- Expected: Error banner appears with a readable message, app does not crash
+### TC-43 — Recent searches history
+- Perform several scans (manual and sitemap)
+- Expected: recent searches appear below the mode tabs, clicking one restores the input
 
-### TC-39 — Very long URL in results
-- Steps: Scan a page with a very long URL
-- Expected: URL wraps or truncates cleanly, no horizontal overflow in the table
-
-### TC-40 — Sitemap with hundreds of pages
-- Steps: Crawl a large site (500+ pages), set limit to 10, scan
-- Expected: Only 10 pages scanned, performance is acceptable, no timeout
+### TC-44 — Clear history
+- Click "Clear" in recent searches
+- Expected: history list disappears, localStorage is cleared
