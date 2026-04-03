@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { ThemeProvider } from "@/lib/theme";
 import StyledComponentsRegistry from "@/lib/registry";
+import QAFloatingButton from "@/features/qa-center/components/QAFloatingButton";
+import QADrawer from "@/features/qa-center/components/QADrawer";
 
 export const metadata: Metadata = {
   title: "PurrScope",
@@ -48,7 +50,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body suppressHydrationWarning>
         <StyledComponentsRegistry>
-          <ThemeProvider>{children}</ThemeProvider>
+          <ThemeProvider>
+            {children}
+            <QAFloatingButton />
+            <QADrawer />
+          </ThemeProvider>
         </StyledComponentsRegistry>
       </body>
     </html>

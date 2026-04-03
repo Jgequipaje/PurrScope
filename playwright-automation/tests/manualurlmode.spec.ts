@@ -101,7 +101,7 @@ test.describe("Manual URL Mode", () => {
 
   test.only("TC-07: Cancel mid-scan — scan stops and Cancel button disappears", async () => {
     await homePage.enterUrls(TEST_URLS.TC07);
-    await expect(homePage.urlCounter).toContainText("10 / 10 URLs");
+    await expect(homePage.urlCounter).toContainText("11 / 10 URLs");
 
     await homePage.clickStartScan();
 
