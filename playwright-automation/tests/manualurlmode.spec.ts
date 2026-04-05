@@ -7,6 +7,8 @@ test.describe("Manual URL Mode", () => {
 
   test.beforeEach(async ({ page }) => {
     homePage = new HomePage(page);
+    // Small wait to let the dev server settle before navigating
+    await page.waitForTimeout(500);
     await homePage.navigate("/");
   });
 
@@ -83,6 +85,19 @@ test.describe("Manual URL Mode", () => {
     expect(rowCount).toBe(10);
   });
 
+  // ISSUE-01: URL counter shows limit warning at exactly 10 URLs
+  // This test verifies the FIXED behavior — 10 URLs is the max allowed,
+  // so no warning should appear. The counter should show neutral text only.
+  test("ISSUE-01: Exactly 10 URLs — counter shows no warning", async () => {
+    // Paste exactly 10 valid URLs (reuse TC05 list but take only first 10)
+    const tenUrls = TEST_URLS.TC05.slice(0, 10);
+    await homePage.enterUrls(tenUrls);
+
+    // Counter should show "10 / 10 URLs" with NO warning text
+    await expect(homePage.urlCounter).toContainText("10 / 10 URLs");
+    await expect(homePage.urlCounter).not.toContainText("limit reached");
+  });
+
   test("TC-06: Invalid URL — shows error banner, scan does not complete", async () => {
     await homePage.enterUrls([TEST_URLS.TC06]);
     await expect(homePage.urlCounter).toContainText("1 / 10 URLs");
@@ -99,7 +114,7 @@ test.describe("Manual URL Mode", () => {
     await expect(errorBanner).toBeVisible({ timeout: 15_000 });
   });
 
-  test.only("TC-07: Cancel mid-scan — scan stops and Cancel button disappears", async () => {
+  test("TC-07: Cancel mid-scan — scan stops and Cancel button disappears", async () => {
     await homePage.enterUrls(TEST_URLS.TC07);
     await expect(homePage.urlCounter).toContainText("11 / 10 URLs");
 

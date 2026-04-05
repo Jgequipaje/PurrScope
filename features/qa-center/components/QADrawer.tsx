@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useTheme, tokens } from "@/lib/theme";
 import { useQACenterStore } from "../store/useQACenterStore";
 import IssueCard from "./IssueCard";
@@ -8,18 +7,18 @@ import IssueDetail from "./IssueDetail";
 import ImportedIssueDetail from "./ImportedIssueDetail";
 import NewIssueForm from "./NewIssueForm";
 import EmptyState from "./EmptyState";
-import ImportIssuesModal from "./ImportIssuesModal";
+// import ImportIssuesModal from "./ImportIssuesModal"; // hidden — re-enable to restore import feature
 
 export default function QADrawer() {
   const { theme } = useTheme();
   const t = tokens[theme];
-  const [showImport, setShowImport] = useState(false);
 
   const {
     isDrawerOpen, closeDrawer,
     issues, filters, setFilters, clearFilters,
     selectedIssueId, selectIssue,
     isCreating, openCreateForm, closeCreateForm,
+    isLoading,
   } = useQACenterStore();
 
   if (!isDrawerOpen) return null;
@@ -56,25 +55,21 @@ export default function QADrawer() {
           <div>
             <div style={{ fontWeight: 700, fontSize: 14, color: t.text }}>PurrScope QA Center</div>
             <div style={{ fontSize: 11, color: t.textFaint, marginTop: 2 }}>
-              {openCount > 0 ? `${openCount} active issue${openCount > 1 ? "s" : ""}` : "No active issues"}
+              {isLoading
+                ? "Loading issues..."
+                : openCount > 0 ? `${openCount} active issue${openCount > 1 ? "s" : ""}` : "No active issues"}
             </div>
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             {!isCreating && !selectedIssue && (
-              <>
-                <button
-                  onClick={() => setShowImport(true)}
-                  style={{ padding: "5px 10px", fontSize: 12, fontWeight: 600, background: t.btnIdle, color: t.btnIdleTxt, border: `1px solid ${t.border}`, borderRadius: 6, cursor: "pointer", fontFamily: "inherit" }}
-                >
-                  Import
-                </button>
-                <button
-                  onClick={openCreateForm}
-                  style={{ padding: "5px 12px", fontSize: 12, fontWeight: 600, background: t.btnActive, color: t.btnActiveTxt, border: "none", borderRadius: 6, cursor: "pointer", fontFamily: "inherit" }}
-                >
-                  + New Issue
-                </button>
-              </>
+              <button
+                onClick={openCreateForm}
+                style={{ padding: "5px 12px", fontSize: 12, fontWeight: 600, background: t.btnActive, color: t.btnActiveTxt, border: "none", borderRadius: 6, cursor: "pointer", fontFamily: "inherit" }}
+              >
+                + New Issue
+              </button>
+              // Import button hidden — uncomment to restore:
+              // <button onClick={() => setShowImport(true)} ...>Import</button>
             )}
             <button onClick={closeDrawer} style={{ background: "none", border: "none", cursor: "pointer", color: t.textMuted, fontSize: 18, lineHeight: 1, padding: "4px 6px" }}>✕</button>
           </div>
@@ -148,7 +143,7 @@ export default function QADrawer() {
           )}
         </div>
       </div>
-      {showImport && <ImportIssuesModal onClose={() => setShowImport(false)} />}
+      {/* {showImport && <ImportIssuesModal onClose={() => setShowImport(false)} />} */}
     </>
   );
 }

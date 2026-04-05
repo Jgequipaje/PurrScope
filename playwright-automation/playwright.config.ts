@@ -5,7 +5,7 @@ export default defineConfig({
   timeout: 90_000,
   reporter: [
     ["list"],
-    ["html", { open: "on-failure" }],
+    ["html", { open: "never" }],
   ],
   use: {
     baseURL: "http://localhost:3000",

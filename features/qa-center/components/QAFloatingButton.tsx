@@ -6,13 +6,18 @@ import { useQACenterStore } from "../store/useQACenterStore";
 export default function QAFloatingButton() {
   const { theme } = useTheme();
   const t = tokens[theme];
-  const { isDrawerOpen, openDrawer, closeDrawer, issues } = useQACenterStore();
+  const { isDrawerOpen, openDrawer, closeDrawer, issues, loadIssues } = useQACenterStore();
 
   const openCount = issues.filter((i) => i.status === "open" || i.status === "in_progress").length;
 
+  function handleOpen() {
+    openDrawer();
+    loadIssues();
+  }
+
   return (
     <button
-      onClick={isDrawerOpen ? closeDrawer : openDrawer}
+      onClick={isDrawerOpen ? closeDrawer : handleOpen}
       title="PurrScope QA Center"
       style={{
         position: "fixed", top: 16, right: 16, zIndex: 998,

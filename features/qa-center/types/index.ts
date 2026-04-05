@@ -9,8 +9,23 @@ export type IssueStatus =
 
 export type IssueSeverity = "critical" | "high" | "medium" | "low" | "info";
 
-/** Where the issue came from */
 export type IssueOrigin = "manual" | "imported_markdown";
+
+export type AutomationResult = "not_run" | "passed" | "failed";
+
+export type LinkedTest = {
+  id: string;
+  file: string;
+  describe?: string;
+  testTitle: string;
+  fullTitle: string;
+};
+
+export type AutomationStatus = {
+  result: AutomationResult;
+  lastRun: string | null;   // ISO timestamp
+  message: string;
+};
 
 export type Issue = {
   id: string;
@@ -20,7 +35,7 @@ export type Issue = {
   createdAt: number;
   updatedAt: number;
 
-  // ── Manual issue fields (origin = "manual") ───────────────────────────────
+  // Manual issue fields
   description?: string;
   severity?: IssueSeverity;
   area?: string;
@@ -29,10 +44,22 @@ export type Issue = {
   actual?: string;
   notes?: string;
 
-  // ── Imported issue fields (origin = "imported_markdown") ─────────────────
-  rawContent?: string;    // full body of the markdown section, preserved as-is
-  sourceRef?: string;     // e.g. "ISSUE-001"
-  sourceFile?: string;    // original filename
+  // Imported markdown fields
+  rawContent?: string;
+  sourceRef?: string;
+  sourceFile?: string;
+
+  // Playwright test linking
+  linkedTest?: LinkedTest;
+  automationStatus?: AutomationStatus;
+};
+
+export type AvailableTest = {
+  id: string;
+  file: string;
+  describe?: string;
+  testTitle: string;
+  fullTitle: string;
 };
 
 export type IssueFilters = {

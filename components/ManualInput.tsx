@@ -92,7 +92,7 @@ export default function ManualInput({ value, onChange, onScan, onCancel, loading
   const t = tokens[theme];
 
   const count = value.split("\n").map((u) => u.trim()).filter(Boolean).length;
-  const atLimit = count >= MAX_URLS;
+  const atLimit = count > MAX_URLS;
   const disabled = loading || count === 0;
 
   return (

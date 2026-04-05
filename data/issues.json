@@ -1,0 +1,28 @@
+[
+  {
+    "id": "issue-1775356882514-xe3q",
+    "origin": "manual",
+    "title": "ISSUE-01 — URL counter shows limit warning at exactly 10 URLs",
+    "description": "When a user pastes exactly 10 URLs, the counter displays the limit reached message in red:\n`10 / 10 URLs — limit reached, remove a URL to add another`\n\nThis is misleading — 10 URLs is the maximum allowed, so the scan should proceed normally without any warning. The red warning should only appear when the user attempts to go *over* the limit (i.e. 11+).",
+    "status": "closed",
+    "severity": "medium",
+    "area": "Manual",
+    "reproSteps": "1. Open the app in Manual URL mode\n2. Paste exactly 10 URLs into the textarea\n3. Observe the counter below the textarea",
+    "expected": "Counter shows `10 / 10 URLs` in normal (muted) color, no warning message.",
+    "actual": "Counter shows `10 / 10 URLs — limit reached, remove a URL to add another` in red.",
+    "linkedTest": {
+      "file": "playwright-automation/tests/manualurlmode.spec.ts",
+      "describe": "Manual URL Mode",
+      "testTitle": "ISSUE-01: Exactly 10 URLs — counter shows no warning",
+      "fullTitle": "Manual URL Mode > ISSUE-01: Exactly 10 URLs — counter shows no warning",
+      "id": "test-oh07n7"
+    },
+    "automationStatus": {
+      "result": "passed",
+      "lastRun": "2026-04-05T03:17:02.754Z",
+      "message": "Test passed successfully."
+    },
+    "createdAt": 1775356882514,
+    "updatedAt": 1775359046130
+  }
+]

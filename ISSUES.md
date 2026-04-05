@@ -20,3 +20,9 @@ Counter shows `10 / 10 URLs` in normal (muted) color, no warning message.
 
 **Actual:**
 Counter shows `10 / 10 URLs — limit reached, remove a URL to add another` in red.
+
+**Linked Playwright Test:**
+File: `playwright-automation/tests/manualurlmode.spec.ts`
+Test: `ISSUE-01: Exactly 10 URLs — counter shows no warning`
+
+Note: TC-05 in the same file tests the *current* (buggy) behavior with 11 URLs. The new `ISSUE-01` test verifies the *fixed* behavior — exactly 10 URLs should not trigger the warning.

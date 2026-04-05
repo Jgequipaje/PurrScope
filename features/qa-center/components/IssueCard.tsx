@@ -78,6 +78,21 @@ export default function IssueCard({ issue, selected, onClick }: Props) {
                 {issue.sourceRef}
               </span>
             )}
+
+            {/* Automation status badge */}
+            {issue.automationStatus && (
+              <span style={{
+                fontSize: 10, padding: "1px 7px", borderRadius: 4, background: t.bgMuted,
+                color: issue.automationStatus.result === "passed" ? "#4ade80"
+                  : issue.automationStatus.result === "failed" ? "#f87171"
+                  : t.textFaint,
+                fontWeight: 600,
+              }}>
+                {issue.automationStatus.result === "passed" ? "✓ Test passed"
+                  : issue.automationStatus.result === "failed" ? "✕ Test failed"
+                  : "Test not run"}
+              </span>
+            )}
           </div>
         </div>
       </div>

@@ -1,0 +1,58 @@
+[
+  {
+    "file": "playwright-automation/tests/manualurlmode.spec.ts",
+    "describe": "Manual URL Mode",
+    "testTitle": "TC-01: Single URL — all SEO passing",
+    "fullTitle": "Manual URL Mode > TC-01: Single URL — all SEO passing",
+    "id": "test-x2h7n7"
+  },
+  {
+    "file": "playwright-automation/tests/manualurlmode.spec.ts",
+    "describe": "Manual URL Mode",
+    "testTitle": "TC-02: Single URL — title out of range (Fail)",
+    "fullTitle": "Manual URL Mode > TC-02: Single URL — title out of range (Fail)",
+    "id": "test-dd0bn0"
+  },
+  {
+    "file": "playwright-automation/tests/manualurlmode.spec.ts",
+    "describe": "Manual URL Mode",
+    "testTitle": "TC-03: Single URL — missing meta description (Fail)",
+    "fullTitle": "Manual URL Mode > TC-03: Single URL — missing meta description (Fail)",
+    "id": "test-10uaaw"
+  },
+  {
+    "file": "playwright-automation/tests/manualurlmode.spec.ts",
+    "describe": "Manual URL Mode",
+    "testTitle": "TC-04: Multiple URLs — all 5 rows appear in results",
+    "fullTitle": "Manual URL Mode > TC-04: Multiple URLs — all 5 rows appear in results",
+    "id": "test-bj70t3"
+  },
+  {
+    "file": "playwright-automation/tests/manualurlmode.spec.ts",
+    "describe": "Manual URL Mode",
+    "testTitle": "TC-05: URL limit — counter warns at 10, only 10 scanned",
+    "fullTitle": "Manual URL Mode > TC-05: URL limit — counter warns at 10, only 10 scanned",
+    "id": "test-rstxcj"
+  },
+  {
+    "file": "playwright-automation/tests/manualurlmode.spec.ts",
+    "describe": "Manual URL Mode",
+    "testTitle": "ISSUE-01: Exactly 10 URLs — counter shows no warning",
+    "fullTitle": "Manual URL Mode > ISSUE-01: Exactly 10 URLs — counter shows no warning",
+    "id": "test-oh07n7"
+  },
+  {
+    "file": "playwright-automation/tests/manualurlmode.spec.ts",
+    "describe": "Manual URL Mode",
+    "testTitle": "TC-06: Invalid URL — shows error banner, scan does not complete",
+    "fullTitle": "Manual URL Mode > TC-06: Invalid URL — shows error banner, scan does not complete",
+    "id": "test-r3dnna"
+  },
+  {
+    "file": "playwright-automation/tests/manualurlmode.spec.ts",
+    "describe": "Manual URL Mode",
+    "testTitle": "TC-07: Cancel mid-scan — scan stops and Cancel button disappears",
+    "fullTitle": "Manual URL Mode > TC-07: Cancel mid-scan — scan stops and Cancel button disappears",
+    "id": "test-du4hd6"
+  }
+]
