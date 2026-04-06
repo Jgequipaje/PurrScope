@@ -66,7 +66,8 @@ const List = styled.ul`
 const EntryBtn = styled.button<{ $border: string; $bg: string; $color: string }>`
   width: 100%;
   text-align: left;
-  padding: 7px 12px;
+  /* padding: 7px 12px; */
+  padding: 10px 14px;
   border-radius: 7px;
   border: 1px solid ${(p) => p.$border};
   background: ${(p) => p.$bg};

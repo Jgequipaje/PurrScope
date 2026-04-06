@@ -7,8 +7,8 @@ import type { Mode } from "@/lib/types";
 type Props = { mode: Mode; onChange: (mode: Mode) => void; disabled?: boolean };
 
 const LABELS: Record<Mode, string> = {
-  manual: "Manual URLs",
-  sitemap: "Sitemap Crawl",
+  manual: "Manual_URLs",
+  sitemap: "Sitemap_Crawl",
 };
 
 const Wrap = styled.div`
@@ -30,10 +30,12 @@ const Tab = styled.button<{
   $border: string; $disabled: boolean;
 }>`
   width: 100%;
-  padding: 10px 16px;
+  padding: 14px 16px;
   font-size: 14px;
   font-weight: 600;
-  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  /* border-radius: 8px; */
   border: 1px solid ${(p) => p.$border};
   cursor: ${(p) => (p.$disabled ? "not-allowed" : "pointer")};
   background: ${(p) => (p.$active ? p.$activeBg : p.$bg)};
@@ -46,7 +48,8 @@ const Tab = styled.button<{
 
   @media (min-width: 480px) {
     width: auto;
-    padding: 6px 16px;
+    /* padding: 6px 16px; */
+    padding: 14px 16px;
   }
 `;
 

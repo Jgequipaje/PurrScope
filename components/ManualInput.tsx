@@ -42,20 +42,23 @@ const Counter = styled.div<{ $warn: boolean; $warnColor: string; $mutedColor: st
 `;
 
 const ScanButton = styled.button<{ $disabled: boolean }>`
-  padding: 0.6rem 1.5rem;
-  font-size: 15px;
-  font-weight: 600;
-  background: ${(p) => (p.$disabled ? "#9ca3af" : "#2563eb")};
-  color: #fff;
+  /* padding: 0.6rem 1.5rem; */
+  padding: 1rem 2rem;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-family: monospace;
+  background: ${(p) => (p.$disabled ? "#555" : "#e8441a")};
+  color: ${(p) => (p.$disabled ? "#999" : "#0d0d0d")};
   border: none;
-  border-radius: 8px;
+  border-radius: 0;
   cursor: ${(p) => (p.$disabled ? "not-allowed" : "pointer")};
   margin-bottom: 1.75rem;
-  font-family: inherit;
   width: 100%;
-  transition: background 0.15s, opacity 0.15s, transform 0.1s;
-  &:not(:disabled):hover { background: #1d4ed8; }
-  &:not(:disabled):active { transform: scale(0.97); }
+  transition: opacity 0.15s;
+  &:not(:disabled):hover { opacity: 0.85; }
+  &:not(:disabled):active { opacity: 0.7; }
 
   @media (min-width: 540px) {
     width: auto;
@@ -64,23 +67,25 @@ const ScanButton = styled.button<{ $disabled: boolean }>`
 
 const CancelButton = styled.button`
   padding: 0.6rem 1.1rem;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-family: monospace;
   background: transparent;
-  color: #b91c1c;
-  border: 1px solid #b91c1c;
-  border-radius: 8px;
+  color: #f0f0f0;
+  border: 1px solid #f0f0f0;
+  border-radius: 0;
   cursor: pointer;
   margin-bottom: 1.75rem;
-  font-family: inherit;
   width: 100%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 5px;
-  transition: background 0.15s, transform 0.1s;
-  &:hover { background: #fee2e2; }
-  &:active { transform: scale(0.97); }
+  transition: opacity 0.15s;
+  &:hover { opacity: 0.7; }
+  &:active { opacity: 0.5; }
 
   @media (min-width: 540px) {
     width: auto;

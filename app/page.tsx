@@ -64,9 +64,12 @@ const PageSubtitle = styled.p<{ $color: string }>`
 const ThemeToggle = styled.button<{ $border: string; $bg: string; $color: string }>`
   margin-top: 4px;
   padding: 6px 12px;
-  font-size: 13px;
-  font-weight: 600;
-  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-family: monospace;
+  border-radius: 0;
   border: 1px solid ${(p) => p.$border};
   cursor: pointer;
   background: ${(p) => p.$bg};
@@ -74,13 +77,12 @@ const ThemeToggle = styled.button<{ $border: string; $bg: string; $color: string
   flex-shrink: 0;
   align-self: flex-start;
   white-space: nowrap;
-  font-family: inherit;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: background 0.15s, border-color 0.15s, opacity 0.15s;
-  &:hover { opacity: 0.8; }
-  &:active { opacity: 0.65; }
+  transition: opacity 0.15s;
+  &:hover { opacity: 0.7; }
+  &:active { opacity: 0.5; }
 `;
 
 const ErrorBanner = styled.div<{ $bg: string; $color: string }>`

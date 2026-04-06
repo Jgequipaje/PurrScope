@@ -73,12 +73,14 @@ export default function SitemapDebug({ crawl, filter, onScan, onScanImproved, on
             <button
               onClick={onCancel}
               style={{
-                padding: "6px 14px", fontSize: 13, fontWeight: 600,
-                background: "transparent", color: t.failText,
-                border: `1px solid ${t.failText}`, borderRadius: 6,
+                padding: "6px 14px", fontSize: 11, fontWeight: 700,
+                letterSpacing: "0.12em", textTransform: "uppercase",
+                fontFamily: "monospace",
+                background: "transparent", color: "#f0f0f0",
+                border: "1px solid #f0f0f0", borderRadius: 0,
                 cursor: "pointer", whiteSpace: "nowrap",
                 display: "inline-flex", alignItems: "center", gap: 5,
-                fontFamily: "inherit", alignSelf: "flex-start",
+                alignSelf: "flex-start",
               }}
             >
               <RiCloseLine size={14} /> Cancel Scan
@@ -90,13 +92,15 @@ export default function SitemapDebug({ crawl, filter, onScan, onScanImproved, on
                 disabled={willScan === 0}
                 title="Scan pages using the improved concurrent pipeline"
                 style={{
-                  padding: "8px 18px", fontSize: 13, fontWeight: 600,
-                  background: willScan === 0 ? t.textFaint : t.btnActive,
-                  color: "#fff", border: "none", borderRadius: 6,
+                  padding: "14px 22px", fontSize: 11, fontWeight: 700,
+                  letterSpacing: "0.12em", textTransform: "uppercase",
+                  fontFamily: "monospace",
+                  background: willScan === 0 ? "#555" : "#e8441a",
+                  color: willScan === 0 ? "#999" : "#0d0d0d",
+                  border: "none", borderRadius: 0,
                   cursor: willScan === 0 ? "not-allowed" : "pointer",
                   whiteSpace: "nowrap",
                   opacity: willScan === 0 ? 0.65 : 1,
-                  fontFamily: "inherit",
                   width: "100%",
                 }}
               >
