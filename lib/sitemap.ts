@@ -239,5 +239,15 @@ export async function resolveSitemapUrls(input: string): Promise<SitemapCrawlRes
     sitemapUrls: state.sitemapUrls,
     pageCount: state.pageUrls.length,
     sitemapCount: state.sitemapUrls.length,
+    filter: {
+      includedUrls: state.pageUrls,
+      excludedUrls: [],
+      collapsedMappings: {},
+      groupedPathCounts: [],
+      excludedPatterns: [],
+      totalDiscovered: state.pageUrls.length,
+      totalAfterFiltering: state.pageUrls.length,
+      totalCollapsed: 0,
+    },
   };
 }

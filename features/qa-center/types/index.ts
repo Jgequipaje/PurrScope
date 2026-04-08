@@ -68,3 +68,16 @@ export type IssueFilters = {
   origin?: IssueOrigin;
   search?: string;
 };
+
+export type VerificationResult = "passed" | "failed" | "skipped" | "pending";
+
+export type VerificationEvent = {
+  id: string;
+  issueId: string;
+  issueTitle: string;
+  result: VerificationResult;
+  runAt: number;        // timestamp
+  durationMs?: number;
+  message?: string;
+  testFile?: string;
+};

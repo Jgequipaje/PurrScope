@@ -51,9 +51,11 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
   if (!issue.linkedTest) return NextResponse.json({ error: "No linked test." }, { status: 400 });
 
   const { testTitle } = issue.linkedTest;
+  // Sanitize: strip characters that could break out of the shell-quoted argument
+  const safeTitle = testTitle.replace(/["`$\\]/g, "").slice(0, 200);
   const now = new Date().toISOString();
 
-  const command = `npx playwright test -g "${testTitle}" --reporter=line --timeout=30000`;
+  const command = `npx playwright test -g "${safeTitle}" --reporter=line --timeout=30000`;
   console.log("[QA run-test] cwd:", PW_CWD);
   console.log("[QA run-test] command:", command);
 

@@ -3,69 +3,55 @@ title PurrScope
 cd /d "%~dp0"
 
 echo.
-echo  =========================================
-echo   PurrScope - Production Launcher
-echo  =========================================
+echo  PurrScope - Production
+echo  ========================
+echo  Working directory: %CD%
 echo.
 
-:: Check Node is installed
+:: Check Node.js
 where node >nul 2>&1
 if errorlevel 1 (
-    echo  ERROR: Node.js is not installed or not in PATH.
-    echo  Download it from https://nodejs.org
-    echo.
+    echo  ERROR: Node.js not found. Download from https://nodejs.org
     pause
     exit /b 1
 )
+for /f "tokens=*" %%v in ('node -v') do echo  Node.js: %%v
 
-:: Check if node_modules exists
+:: Install dependencies only if node_modules is missing
 if not exist "node_modules\" (
-    echo  node_modules not found. Running npm install...
     echo.
-    npm install
+    echo  Installing dependencies...
+    call npm install
     if errorlevel 1 (
-        echo.
         echo  ERROR: npm install failed.
         pause
         exit /b 1
     )
-    echo.
 )
 
-:: Build if .next folder doesn't exist
-if not exist ".next\" (
-    echo  No build found. Building now, this may take a minute...
+:: Build
+echo.
+echo  Building app...
+set NEXT_PUBLIC_HIDE_QA=true
+call npm run build
+if errorlevel 1 (
     echo.
-    npm run build
-    if errorlevel 1 (
-        echo.
-        echo  ERROR: Build failed. See above for details.
-        pause
-        exit /b 1
-    )
-    echo.
+    echo  ERROR: Build failed. Check output above.
+    pause
+    exit /b 1
 )
 
-echo  Starting server on http://localhost:3000
-echo  Waiting for server to be ready...
+:: Open browser after delay
+start "" cmd /c "timeout /t 6 /nobreak >nul && start http://localhost:3000"
+
+echo.
+echo  Starting server at http://localhost:3000
 echo  Press Ctrl+C to stop.
 echo.
 
-:: Start the server in the background
-start "" cmd /c "npm start"
+set NEXT_PUBLIC_HIDE_QA=true
+call npm start
 
-:: Poll until the server responds, then open browser
-:waitloop
-timeout /t 2 /nobreak >nul
-curl -s http://localhost:3000 >nul 2>&1
-if errorlevel 1 goto waitloop
-
-echo  Server is ready. Opening browser...
-start http://localhost:3000
-
-:: Keep this window open so user can see it's running
 echo.
-echo  PurrScope is running at http://localhost:3000
-echo  Close this window to stop the server.
-echo.
+echo  Server stopped.
 pause

@@ -66,7 +66,7 @@ const CrawlButton = styled.button<{ $disabled: boolean }>`
   background: ${(p) => (p.$disabled ? "#3f3f46" : "#7c3aed")};
   color: ${(p) => (p.$disabled ? "#71717a" : "#ffffff")};
   border: none;
-  border-radius: 0;
+  border-radius: 6px;
   cursor: ${(p) => (p.$disabled ? "not-allowed" : "pointer")};
   white-space: nowrap;
   width: 100%;
@@ -91,7 +91,7 @@ const CancelButton = styled.button`
   background: transparent;
   color: #f0f0f0;
   border: 1px solid #f0f0f0;
-  border-radius: 0;
+  border-radius: 6px;
   cursor: pointer;
   white-space: nowrap;
   width: 100%;
@@ -134,7 +134,7 @@ const InfoCallout = styled.div<{ $bg: string; $border: string }>`
   padding: 7px 11px;
   margin: 0 0 10px;
   border: 1px solid ${(p) => p.$border};
-  border-radius: 7px;
+  border-radius: 8px;
   background: ${(p) => p.$bg};
   animation: ${fadeIn} 0.18s ease;
 `;

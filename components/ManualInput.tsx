@@ -52,7 +52,7 @@ const ScanButton = styled.button<{ $disabled: boolean }>`
   background: ${(p) => (p.$disabled ? "#3f3f46" : "#7c3aed")};
   color: ${(p) => (p.$disabled ? "#71717a" : "#ffffff")};
   border: none;
-  border-radius: 0;
+  border-radius: 6px;
   cursor: ${(p) => (p.$disabled ? "not-allowed" : "pointer")};
   margin-bottom: 1.75rem;
   width: 100%;
@@ -75,7 +75,7 @@ const CancelButton = styled.button`
   background: transparent;
   color: #f0f0f0;
   border: 1px solid #f0f0f0;
-  border-radius: 0;
+  border-radius: 6px;
   cursor: pointer;
   margin-bottom: 1.75rem;
   width: 100%;

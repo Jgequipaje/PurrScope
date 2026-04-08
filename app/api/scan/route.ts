@@ -20,6 +20,9 @@ export async function POST(req: NextRequest) {
   if (!Array.isArray(urls) || urls.length === 0) {
     return NextResponse.json({ error: "Provide at least one URL." }, { status: 400 });
   }
+  if ((urls as string[]).length > 500) {
+    return NextResponse.json({ error: "Too many URLs. Maximum is 500 per request." }, { status: 400 });
+  }
 
   // Apply limit only when explicitly passed
   const toScan: string[] = limit !== undefined

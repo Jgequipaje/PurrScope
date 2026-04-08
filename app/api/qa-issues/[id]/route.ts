@@ -27,7 +27,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const idx = issues.findIndex((i) => i.id === id);
   if (idx === -1) return NextResponse.json({ error: "Not found." }, { status: 404 });
 
-  issues[idx] = { ...issues[idx], ...body, id, updatedAt: Date.now() };
+  // Whitelist updatable fields — never allow overwriting id or createdAt
+  const ALLOWED: (keyof Issue)[] = [
+    "title", "status", "description", "severity", "area",
+    "reproSteps", "expected", "actual", "notes",
+    "rawContent", "sourceRef", "sourceFile",
+    "linkedTest", "automationStatus",
+  ];
+  const patch: Partial<Issue> = {};
+  for (const key of ALLOWED) {
+    if (key in body) (patch as Record<string, unknown>)[key] = body[key];
+  }
+
+  issues[idx] = { ...issues[idx], ...patch, id, updatedAt: Date.now() };
   await writeIssues(issues);
   return NextResponse.json(issues[idx]);
 }

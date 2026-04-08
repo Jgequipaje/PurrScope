@@ -68,7 +68,7 @@ const EntryBtn = styled.button<{ $border: string; $bg: string; $color: string }>
   text-align: left;
   /* padding: 7px 12px; */
   padding: 10px 14px;
-  border-radius: 7px;
+  border-radius: 8px;
   border: 1px solid ${(p) => p.$border};
   background: ${(p) => p.$bg};
   color: ${(p) => p.$color};

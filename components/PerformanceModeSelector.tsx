@@ -34,7 +34,7 @@ const Label = styled.div<{ $color: string }>`
 const ButtonGroup = styled.div<{ $border: string }>`
   display: inline-flex;
   border: 1px solid ${(p) => p.$border};
-  border-radius: 7px;
+  border-radius: 8px;
   overflow: hidden;
 `;
 

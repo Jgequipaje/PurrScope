@@ -34,6 +34,9 @@ export async function POST(req: NextRequest) {
   if (!body?.title?.trim()) {
     return NextResponse.json({ error: "Title is required." }, { status: 400 });
   }
+  if (typeof body.title === "string" && body.title.length > 500) {
+    return NextResponse.json({ error: "Title too long." }, { status: 400 });
+  }
 
   const issues = await readIssues();
   const now = Date.now();

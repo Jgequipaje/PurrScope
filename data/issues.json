@@ -1,5 +1,31 @@
 [
   {
+    "id": "issue-1775657922955-2yod",
+    "origin": "manual",
+    "title": "Test Issue TC-01",
+    "description": "Test Data",
+    "status": "closed",
+    "severity": "critical",
+    "area": "Test",
+    "reproSteps": "Test",
+    "expected": "Test",
+    "actual": "Test",
+    "linkedTest": {
+      "file": "playwright-automation/tests/manualurlmode.spec.ts",
+      "describe": "Manual URL Mode",
+      "testTitle": "TC-01: Single URL — all SEO passing",
+      "fullTitle": "Manual URL Mode > TC-01: Single URL — all SEO passing",
+      "id": "test-x2h7n7"
+    },
+    "automationStatus": {
+      "result": "passed",
+      "lastRun": "2026-04-08T14:18:49.782Z",
+      "message": "Test passed successfully."
+    },
+    "createdAt": 1775657922955,
+    "updatedAt": 1775657953511
+  },
+  {
     "id": "issue-1775356882514-xe3q",
     "origin": "manual",
     "title": "ISSUE-01 — URL counter shows limit warning at exactly 10 URLs",

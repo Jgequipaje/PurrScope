@@ -13,7 +13,7 @@ export default function HistoryTab({ issues }: Props) {
   const t = tokens[theme];
 
   const allHistory = issues
-    .flatMap((i) => i.history.map((h) => ({ ...h, issueTitle: i.title })))
+    .flatMap((i) => ((i as any).history ?? []).map((h: any) => ({ ...h, issueTitle: i.title })))
     .sort((a, b) => b.timestamp - a.timestamp);
 
   if (allHistory.length === 0) {

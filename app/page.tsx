@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from "react";
 import styled from "styled-components";
-import { RiMoonLine, RiSunLine } from "react-icons/ri";
+import { RiMoonLine, RiSunLine, RiExternalLinkLine } from "react-icons/ri";
 import ModeTabs from "@/components/ModeTabs";
 import ManualInput from "@/components/ManualInput";
 import SitemapInput from "@/components/SitemapInput";
@@ -10,6 +10,7 @@ import SitemapDebug from "@/components/SitemapDebug";
 import ScopeSelector from "@/components/ScopeSelector";
 import ResultsTable from "@/components/ResultsTable";
 import RecentSearches from "@/components/RecentSearches";
+import Mascot, { type MascotState } from "@/components/Mascot";
 import { useTheme, tokens } from "@/lib/theme";
 import { loadHistory, saveHistory, addHistoryEntry, clearHistory } from "@/lib/history";
 import { isValidUrl, normalizeUrlString, getBaseUrlForSitemapCrawl } from "@/lib/urlValidation";
@@ -69,7 +70,7 @@ const ThemeToggle = styled.button<{ $border: string; $bg: string; $color: string
   letter-spacing: 0.1em;
   text-transform: uppercase;
   font-family: monospace;
-  border-radius: 0;
+  border-radius: 6px;
   border: 1px solid ${(p) => p.$border};
   cursor: pointer;
   background: ${(p) => p.$bg};
@@ -150,6 +151,16 @@ const SummaryItem = styled.span<{ $accent: string }>`
   & strong { color: ${(p) => p.$accent}; }
 `;
 
+const MascotArea = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+
+  @media (min-width: 640px) {
+    margin-bottom: 2rem;
+  }
+`;
+
 // Post-scan completion banner
 const ScanCompleteBanner = styled.div<{ $bg: string; $border: string; $color: string }>`
   background: ${(p) => p.$bg};
@@ -177,7 +188,7 @@ const SecondaryBtn = styled.button<{ $border: string; $color: string; $bg: strin
   padding: 5px 12px;
   font-size: 12px;
   font-weight: 600;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid ${(p) => p.$border};
   background: ${(p) => p.$bg};
   color: ${(p) => p.$color};
@@ -200,12 +211,29 @@ const RescanNote = styled.div<{ $color: string; $bg: string; $border: string }>`
   color: ${(p) => p.$color};
   background: ${(p) => p.$bg};
   border: 1px solid ${(p) => p.$border};
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 6px 12px;
   margin-bottom: 10px;
 `;
 
-// ── Component ─────────────────────────────────────────────────────────────────
+const Footer = styled.footer`
+  margin-top: 3rem;
+  padding-bottom: 1.5rem;
+  text-align: center;
+  font-size: 11px;
+  opacity: 0.45;
+  transition: opacity 0.15s;
+  &:hover { opacity: 0.8; }
+`;
+
+const FooterLink = styled.a`
+  color: inherit;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  &:hover { color: #7c3aed; text-decoration: underline; }
+`;
 
 export default function Home() {
   const { theme, toggle } = useTheme();
@@ -492,8 +520,7 @@ export default function Home() {
 
   async function callScanApi(
     urls: string[], limit?: number, signal?: AbortSignal, route = "/api/scan-improved", perfMode?: PerformanceMode, runMode?: BenchmarkRunMode
-  ): Promise<{ results: ScanResult[]; durationMs: number }> {
-    const res = await fetch(route, {
+  ): Promise<{ results: ScanResult[]; durationMs: number }> {    const res = await fetch(route, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -512,6 +539,15 @@ export default function Home() {
     };
   }
 
+  // Derive mascot state from current scan/results state
+  const mascotState: MascotState = isScanning || isCrawling
+    ? "scanning"
+    : results.length > 0
+      ? results.some(r => r.titleStatus === "Fail" || r.descriptionStatus === "Fail" || r.scanStatus === "Blocked (automation)" || r.error)
+        ? "fail"
+        : "pass"
+      : "idle";
+
   return (
     <Main $color={t.text}>
       <HeaderRow>
@@ -525,6 +561,10 @@ export default function Home() {
           {theme === "light" ? <><RiMoonLine size={14} /> Dark</> : <><RiSunLine size={14} /> Light</>}
         </ThemeToggle>
       </HeaderRow>
+
+      <MascotArea>
+        <Mascot state={mascotState} size={110} />
+      </MascotArea>
 
       <ModeTabs mode={mode} onChange={handleModeChange} disabled={isProcessing} />
 
@@ -620,8 +660,8 @@ export default function Home() {
 
       {error && <FriendlyError message={error} bg={t.failBg} color={t.failText} />}
 
-      {/* SitemapDebug — hidden once scan results are available */}
-      {mode === "sitemap" && crawlResult && liveFilter && results.length === 0 && (
+      {/* SitemapDebug — shown before scan, and when scope controls are expanded post-scan */}
+      {mode === "sitemap" && crawlResult && liveFilter && (results.length === 0 || showScopeControls) && (
         <SitemapDebug
           crawl={crawlResult}
           filter={liveFilter}
@@ -654,6 +694,13 @@ export default function Home() {
           onReset={resetBenchmark}
         />
       )}
+
+      <Footer>
+        Made{"  "}
+        <FooterLink href="https://www.byjeff.dev/" target="_blank" rel="noreferrer">
+          byjeff.dev <RiExternalLinkLine size={10} />
+        </FooterLink>
+      </Footer>
     </Main>
   );
 }

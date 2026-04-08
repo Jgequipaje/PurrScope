@@ -35,7 +35,7 @@ const Tab = styled.button<{
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 2px;
-  /* border-radius: 8px; */
+  border-radius: 8px;
   border: 1px solid ${(p) => p.$border};
   cursor: ${(p) => (p.$disabled ? "not-allowed" : "pointer")};
   background: ${(p) => (p.$active ? p.$activeBg : p.$bg)};
