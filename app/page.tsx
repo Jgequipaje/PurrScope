@@ -150,6 +150,61 @@ const SummaryItem = styled.span<{ $accent: string }>`
   & strong { color: ${(p) => p.$accent}; }
 `;
 
+// Post-scan completion banner
+const ScanCompleteBanner = styled.div<{ $bg: string; $border: string; $color: string }>`
+  background: ${(p) => p.$bg};
+  border: 1px solid ${(p) => p.$border};
+  border-radius: 8px;
+  padding: 10px 16px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: ${(p) => p.$color};
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+`;
+
+const ScanCompleteActions = styled.div`
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+`;
+
+const SecondaryBtn = styled.button<{ $border: string; $color: string; $bg: string }>`
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1px solid ${(p) => p.$border};
+  background: ${(p) => p.$bg};
+  color: ${(p) => p.$color};
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s;
+  &:not(:disabled):hover { opacity: 0.75; }
+`;
+
+// Collapsible scope controls wrapper with smooth transition
+const ScopeControlsWrap = styled.div<{ $visible: boolean }>`
+  max-height: ${(p) => (p.$visible ? "600px" : "0")};
+  opacity: ${(p) => (p.$visible ? 1 : 0)};
+  pointer-events: ${(p) => (p.$visible ? "auto" : "none")};
+  transition: max-height 0.3s ease, opacity 0.25s ease;
+`;
+
+const RescanNote = styled.div<{ $color: string; $bg: string; $border: string }>`
+  font-size: 12px;
+  color: ${(p) => p.$color};
+  background: ${(p) => p.$bg};
+  border: 1px solid ${(p) => p.$border};
+  border-radius: 6px;
+  padding: 6px 12px;
+  margin-bottom: 10px;
+`;
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function Home() {
@@ -189,6 +244,10 @@ export default function Home() {
   // Scan execution timer
   const [scanTimer, setScanTimer] = useState<TimerState>({ duration: null, status: null });
   const scanStartRef = useRef<number | null>(null);
+
+  // Post-scan UI state — collapse setup controls after scan completes
+  const [showScopeControls, setShowScopeControls] = useState(true);
+  const [scopeChangedAfterScan, setScopeChangedAfterScan] = useState(false);
 
   // AbortController refs — one per cancellable operation
   const crawlAbortRef = useRef<AbortController | null>(null);
@@ -257,6 +316,8 @@ export default function Home() {
     setPipelineUsed(null);
     setBenchmarkSnapshot(null);
     setSelectedGroups([]);
+    setShowScopeControls(true);
+    setScopeChangedAfterScan(false);
   }
 
   function resetBenchmark() {
@@ -386,6 +447,8 @@ export default function Home() {
         setResults(data);
         setPipelineUsed(pipeline);
         setScanTimer({ duration: Date.now() - (scanStartRef.current ?? Date.now()), status: "completed" });
+        setShowScopeControls(false);
+        setScopeChangedAfterScan(false);
 
         const metrics = computeMetrics(pipeline, data, durationMs || (Date.now() - (scanStartRef.current ?? Date.now())), {
           urlsQueued: snapshot.queueSize,
@@ -488,25 +551,68 @@ export default function Home() {
               Scope and exclusion changes update liveFilter instantly via useMemo. */}
           {crawlResult && (
             <>
-              {/* Crawl summary — persists across scope/exclusion changes */}
-              <CrawlSummary $bg={t.bgSubtle} $border={t.border} $color={t.textMuted}>
-                <SummaryItem $accent={t.infoText}>
-                  <strong>{crawlResult.pageCount}</strong> pages discovered
-                </SummaryItem>
-                <SummaryItem $accent={t.passText}>
-                  <strong>{availableCount}</strong> pages selected for scanning
-                </SummaryItem>
-              </CrawlSummary>
+              {/* Post-scan completion banner — shown once results exist */}
+              {results.length > 0 && !isScanning ? (
+                <ScanCompleteBanner $bg={t.successBg} $border={t.passText} $color={t.successText}>
+                  <span>Scan complete — review the results below.</span>
+                  <ScanCompleteActions>
+                    <SecondaryBtn
+                      $border={t.border}
+                      $color={t.textMuted}
+                      $bg={t.bgMuted}
+                      onClick={() => setShowScopeControls((v) => !v)}
+                    >
+                      {showScopeControls ? "Hide Scan Scope" : "Change Scan Scope"}
+                    </SecondaryBtn>
+                    <SecondaryBtn
+                      $border={t.accent}
+                      $color={t.accent}
+                      $bg="transparent"
+                      onClick={() => {
+                        setShowScopeControls(true);
+                        setScopeChangedAfterScan(false);
+                        handleScanDiscovered("improved");
+                      }}
+                    >
+                      Run New Scan
+                    </SecondaryBtn>
+                  </ScanCompleteActions>
+                </ScanCompleteBanner>
+              ) : (
+                /* Pre-scan crawl summary */
+                <CrawlSummary $bg={t.bgSubtle} $border={t.border} $color={t.textMuted}>
+                  <SummaryItem $accent={t.infoText}>
+                    <strong>{crawlResult.pageCount}</strong> pages discovered
+                  </SummaryItem>
+                  <SummaryItem $accent={t.passText}>
+                    <strong>{availableCount}</strong> pages selected for scanning
+                  </SummaryItem>
+                </CrawlSummary>
+              )}
 
-              {/* Scope selector + dynamic exclusions — purely client-side filtering */}
-              <ScopeSelector
-                scope={scope}
-                onScopeChange={(s) => { setScope(s); if (s !== "dynamic") setSelectedGroups([]); }}
-                dynamicGroups={dynamicGroups}
-                selectedGroups={selectedGroups}
-                onSelectedGroupsChange={setSelectedGroups}
-                disabled={isProcessing}
-              />
+              {/* Scope selector + dynamic exclusions — collapsible after scan */}
+              <ScopeControlsWrap $visible={showScopeControls || results.length === 0}>
+                {scopeChangedAfterScan && results.length > 0 && (
+                  <RescanNote $color={t.warnText} $bg={t.warnBg} $border={t.border}>
+                    Scope changed — run a new scan to update results.
+                  </RescanNote>
+                )}
+                <ScopeSelector
+                  scope={scope}
+                  onScopeChange={(s) => {
+                    setScope(s);
+                    if (s !== "dynamic") setSelectedGroups([]);
+                    if (results.length > 0) setScopeChangedAfterScan(true);
+                  }}
+                  dynamicGroups={dynamicGroups}
+                  selectedGroups={selectedGroups}
+                  onSelectedGroupsChange={(g) => {
+                    setSelectedGroups(g);
+                    if (results.length > 0) setScopeChangedAfterScan(true);
+                  }}
+                  disabled={isProcessing}
+                />
+              </ScopeControlsWrap>
             </>
           )}
         </>
@@ -514,8 +620,8 @@ export default function Home() {
 
       {error && <FriendlyError message={error} bg={t.failBg} color={t.failText} />}
 
-      {/* SitemapDebug stays visible as long as crawlResult exists — filter changes don't hide it */}
-      {mode === "sitemap" && crawlResult && liveFilter && (
+      {/* SitemapDebug — hidden once scan results are available */}
+      {mode === "sitemap" && crawlResult && liveFilter && results.length === 0 && (
         <SitemapDebug
           crawl={crawlResult}
           filter={liveFilter}
@@ -538,7 +644,8 @@ export default function Home() {
 
       {results.length > 0 && <ResultsTable results={results} scanTimer={scanTimer} />}
 
-      {(benchPrevious || benchImproved) && (
+      {/* Benchmark table hidden — set to true to re-enable */}
+      {false && (benchPrevious || benchImproved) && (
         <BenchmarkComparisonTable
           previous={benchPrevious}
           improved={benchImproved}

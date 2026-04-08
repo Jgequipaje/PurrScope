@@ -34,8 +34,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <style dangerouslySetInnerHTML={{ __html: `
           *, *::before, *::after { box-sizing: border-box; }
           /* Set background on html immediately so there is no white flash before body renders */
-          html[data-theme="dark"]  { background: #1a1a1a; color: #f0f0f0; }
-          html[data-theme="light"] { background: #ffffff; color: #111827; }
+          html[data-theme="dark"]  { background: #09090b; color: #fafafa; }
+          html[data-theme="light"] { background: #ffffff; color: #09090b; }
           body {
             margin: 0;
             font-family: 'JetBrains Mono', monospace;

@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, Fragment } from "react";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import {
   RiCheckboxCircleFill, RiCloseCircleFill, RiProhibitedLine,
   RiAlertLine, RiCornerDownRightLine,
   RiArrowDownSLine, RiArrowUpSLine,
-  RiFileCopyLine, RiCheckLine,
+  RiFileCopyLine, RiCheckLine, RiErrorWarningLine,
 } from "react-icons/ri";
 import { buildCopyText } from "@/lib/copy";
 import { useTheme, tokens } from "@/lib/theme";
@@ -21,6 +21,11 @@ type Props = {
 };
 
 // ── Styled primitives ─────────────────────────────────────────────────────────
+
+const fadeIn = keyframes`
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+`;
 
 const TableWrap = styled.div<{ $border: string; $bg: string }>`
   border: 1px solid ${(p) => p.$border};
@@ -98,10 +103,12 @@ const Td = styled.td<{ $border: string; $color: string; $align?: string }>`
   text-align: ${(p) => p.$align ?? "left"};
 `;
 
-const DataRow = styled.tr<{ $bg: string; $open: boolean; $accentColor: string }>`
+const DataRow = styled.tr<{ $bg: string; $open: boolean; $accentColor: string; $failed: boolean; $failBorder: string }>`
   background: ${(p) => p.$bg};
   cursor: pointer;
+  border-left: 3px solid ${(p) => p.$failed ? p.$failBorder : "transparent"};
   box-shadow: ${(p) => p.$open ? `inset 3px 0 0 ${p.$accentColor}` : "none"};
+  animation: ${fadeIn} 0.2s ease both;
   transition: filter 0.12s;
   &:hover { filter: brightness(0.97); }
 `;
@@ -142,6 +149,19 @@ const LengthSpan = styled.span<{ $color: string }>`
 
 const MissingSpan = styled.span<{ $color: string }>`
   color: ${(p) => p.$color};
+`;
+
+const CautionBadge = styled.span<{ $bg: string; $color: string; $border: string }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 7px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  background: ${(p) => p.$bg};
+  color: ${(p) => p.$color};
+  border: 1px solid ${(p) => p.$border};
 `;
 
 const ExpandedTd = styled.td<{ $bg: string; $border: string }>`
@@ -342,7 +362,14 @@ export default function ResultsTable({ results, scanTimer }: Props) {
               const isOpen = openUrl === r.url;
               return (
                 <Fragment key={r.url}>
-                  <DataRow $bg={rowFailed ? t.rowFail : t.rowOk} $open={isOpen} $accentColor={t.btnActive} onClick={() => toggleRow(r.url)}>
+                  <DataRow
+                    $bg={rowFailed ? t.rowFail : t.rowOk}
+                    $open={isOpen}
+                    $accentColor={t.btnActive}
+                    $failed={rowFailed}
+                    $failBorder={t.rowFailBorder}
+                    onClick={() => toggleRow(r.url)}
+                  >
                     <ExpandCell $border={t.border} $color={t.textFaint} $align="center">
                       {isOpen ? <RiArrowUpSLine size={16} /> : <RiArrowDownSLine size={16} />}
                     </ExpandCell>
@@ -350,6 +377,13 @@ export default function ResultsTable({ results, scanTimer }: Props) {
                       <UrlAnchor href={r.url} target="_blank" rel="noreferrer" $color={t.link} onClick={(e) => e.stopPropagation()}>
                         {r.url}
                       </UrlAnchor>
+                      {rowFailed && !isBlocked && (
+                        <SubLine $color={t.warnText}>
+                          <CautionBadge $bg={t.warnBg} $color={t.warnText} $border={t.warnBorder}>
+                            <RiErrorWarningLine size={11} /> Needs attention
+                          </CautionBadge>
+                        </SubLine>
+                      )}
                       {r.finalUrl && r.finalUrl !== r.url && (
                         <SubLine $color={t.textMuted}>
                           <IconWrap><RiCornerDownRightLine size={11} /> redirected to{" "}

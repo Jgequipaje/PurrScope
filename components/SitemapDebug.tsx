@@ -9,6 +9,7 @@
 //   - "Scan N Pages" button to proceed
 
 import { useState } from "react";
+import styled from "styled-components";
 import { RiCloseLine } from "react-icons/ri";
 import FilterDebug from "@/components/FilterDebug";
 import PerformanceModeSelector from "@/components/PerformanceModeSelector";
@@ -16,6 +17,44 @@ import { useTheme, tokens } from "@/lib/theme";
 import type { SitemapCrawlResult, FilterResult } from "@/lib/types";
 import type { PerformanceMode } from "@/scan/types";
 import type { BenchmarkRunMode } from "@/scan/benchmarkTypes";
+
+const StartScanBtn = styled.button<{ $disabled: boolean }>`
+  padding: 14px 22px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-family: monospace;
+  background: ${(p) => (p.$disabled ? "#3f3f46" : "#7c3aed")};
+  color: ${(p) => (p.$disabled ? "#71717a" : "#ffffff")};
+  border: none;
+  border-radius: 0;
+  cursor: ${(p) => (p.$disabled ? "not-allowed" : "pointer")};
+  opacity: ${(p) => (p.$disabled ? 0.65 : 1)};
+  width: 100%;
+  transition: opacity 0.15s;
+  &:not(:disabled):hover { opacity: 0.8; }
+`;
+
+const CancelScanBtn = styled.button`
+  padding: 6px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-family: monospace;
+  background: transparent;
+  color: #f0f0f0;
+  border: 1px solid #f0f0f0;
+  border-radius: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  align-self: flex-start;
+  transition: opacity 0.15s;
+  &:hover { opacity: 0.7; }
+`;
 
 type Props = {
   crawl: SitemapCrawlResult;
@@ -70,48 +109,26 @@ export default function SitemapDebug({ crawl, filter, onScan, onScanImproved, on
             )}
           </span>
           {scanning ? (
-            <button
-              onClick={onCancel}
-              style={{
-                padding: "6px 14px", fontSize: 11, fontWeight: 700,
-                letterSpacing: "0.12em", textTransform: "uppercase",
-                fontFamily: "monospace",
-                background: "transparent", color: "#f0f0f0",
-                border: "1px solid #f0f0f0", borderRadius: 0,
-                cursor: "pointer", whiteSpace: "nowrap",
-                display: "inline-flex", alignItems: "center", gap: 5,
-                alignSelf: "flex-start",
-              }}
-            >
+            <CancelScanBtn onClick={onCancel}>
               <RiCloseLine size={14} /> Cancel Scan
-            </button>
+            </CancelScanBtn>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 4 }}>
-              <button
+              <StartScanBtn
                 onClick={onScanImproved}
                 disabled={willScan === 0}
+                $disabled={willScan === 0}
                 title="Scan pages using the improved concurrent pipeline"
-                style={{
-                  padding: "14px 22px", fontSize: 11, fontWeight: 700,
-                  letterSpacing: "0.12em", textTransform: "uppercase",
-                  fontFamily: "monospace",
-                  background: willScan === 0 ? "#555" : "#e8441a",
-                  color: willScan === 0 ? "#999" : "#0d0d0d",
-                  border: "none", borderRadius: 0,
-                  cursor: willScan === 0 ? "not-allowed" : "pointer",
-                  whiteSpace: "nowrap",
-                  opacity: willScan === 0 ? 0.65 : 1,
-                  width: "100%",
-                }}
               >
                 Start Scan {willScan > 0 ? `— ${willScan} Pages` : ""}
-              </button>
+              </StartScanBtn>
               <PerformanceModeSelector
                 value={performanceMode}
                 onChange={onPerformanceModeChange}
                 disabled={scanning}
               />
-              {/* Benchmark run mode + reset */}
+              {/* Benchmark run mode + reset — hidden, set to true to re-enable */}
+              {false && (
               <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8, marginTop: 6 }}>
                 <span style={{ fontSize: 11, fontWeight: 600, color: t.textMuted, whiteSpace: "nowrap" }}>
                   Run mode:
@@ -152,6 +169,7 @@ export default function SitemapDebug({ crawl, filter, onScan, onScanImproved, on
                   </button>
                 )}
               </div>
+              )}
             </div>
           )}
         </div>

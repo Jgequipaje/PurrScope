@@ -63,8 +63,8 @@ const CrawlButton = styled.button<{ $disabled: boolean }>`
   letter-spacing: 0.12em;
   text-transform: uppercase;
   font-family: monospace;
-  background: ${(p) => (p.$disabled ? "#555" : "#e8441a")};
-  color: ${(p) => (p.$disabled ? "#999" : "#0d0d0d")};
+  background: ${(p) => (p.$disabled ? "#3f3f46" : "#7c3aed")};
+  color: ${(p) => (p.$disabled ? "#71717a" : "#ffffff")};
   border: none;
   border-radius: 0;
   cursor: ${(p) => (p.$disabled ? "not-allowed" : "pointer")};
