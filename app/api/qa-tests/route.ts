@@ -54,6 +54,7 @@ function stableId(file: string, fullTitle: string): string {
 async function scanDir(dir: string): Promise<string[]> {
   const files: string[] = [];
   try {
+    /* turbopackIgnore: true */
     const entries = await fs.readdir(dir, { withFileTypes: true });
     for (const entry of entries) {
       const full = path.join(dir, entry.name);
@@ -74,6 +75,7 @@ async function discoverTests(): Promise<AvailableTest[]> {
   const allTests: AvailableTest[] = [];
 
   for (const dir of SCAN_DIRS) {
+    /* turbopackIgnore: true */
     const files = await scanDir(path.join(cwd, dir));
     for (const file of files) {
       const relPath = path.relative(cwd, file).replace(/\\/g, "/");
