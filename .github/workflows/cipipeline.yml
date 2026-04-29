@@ -24,9 +24,9 @@ jobs:
       - name: Run Check Formatting
         run: npm run format:check
 
-  build:
+  smoke-tests:
     needs: [format]
-    name: Build
+    name: Run Playwright Tests
     runs-on: ubuntu-latest
     steps:
       - name: Run Checkout
@@ -43,29 +43,6 @@ jobs:
 
       - name: Run Build
         run: npm run build
-
-      - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build
-          path: .next/
-
-  smoke-tests:
-    needs: [format, build]
-    name: Run Playwright Tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Run Checkout
-        uses: actions/checkout@v6
-
-      - name: Run Setup Node
-        uses: actions/setup-node@v6
-        with:
-          node-version: lts/*
-          cache: "npm"
-
-      - name: Run Setup Dependencies
-        run: npm ci
 
       - name: Get Playwright version
         id: playwright-version
@@ -84,12 +61,6 @@ jobs:
       - name: Install System Deps (if cache hit)
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps
-
-      - name: Download Build Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build
-          path: .next/
 
       - name: Start Production Server
         run: npm run start &
