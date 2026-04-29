@@ -62,14 +62,6 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps
 
-      - name: Start Production Server
-        run: npm run start &
-        env:
-          CI: true
-
-      - name: Wait for Server
-        run: npx wait-on http://localhost:3000 --timeout 60000
-
       - name: Run Playwright Tests
         run: npx playwright test --grep "@Smoke"
 
