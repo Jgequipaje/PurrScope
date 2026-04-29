@@ -8,9 +8,9 @@ export type SearchType = "url" | "manual";
 export type HistoryEntry = {
   id: string;
   type: SearchType;
-  value: string;       // raw value as entered
+  value: string; // raw value as entered
   normalizedValue: string; // lowercased/trimmed for dedup comparison
-  createdAt: number;   // Date.now()
+  createdAt: number; // Date.now()
 };
 
 const STORAGE_KEY = "seo_checker_history";
@@ -58,7 +58,11 @@ export function loadHistory(): HistoryEntry[] {
     const trimmed = parsed.slice(0, MAX_ENTRIES);
     // Re-save if we trimmed stale over-limit data
     if (trimmed.length < parsed.length) {
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed)); } catch { /* ignore */ }
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
+      } catch {
+        /* ignore */
+      }
     }
     return trimmed;
   } catch {
@@ -99,9 +103,7 @@ export function addHistoryEntry(
   const normalized = normalizeValue(type, value);
 
   // Remove existing duplicate (same type + normalizedValue)
-  const deduped = current.filter(
-    (e) => !(e.type === type && e.normalizedValue === normalized)
-  );
+  const deduped = current.filter((e) => !(e.type === type && e.normalizedValue === normalized));
 
   const entry: HistoryEntry = {
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -126,12 +128,14 @@ const MANUAL_PREVIEW_MAX = 60;
 export function entryLabel(entry: HistoryEntry): string {
   if (entry.type === "url") return entry.value;
 
-  const lines = entry.value.split("\n").map((l) => l.trim()).filter(Boolean);
+  const lines = entry.value
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
   if (lines.length === 0) return entry.value;
 
-  const first = lines[0].length > MANUAL_PREVIEW_MAX
-    ? lines[0].slice(0, MANUAL_PREVIEW_MAX) + "…"
-    : lines[0];
+  const first =
+    lines[0].length > MANUAL_PREVIEW_MAX ? lines[0].slice(0, MANUAL_PREVIEW_MAX) + "…" : lines[0];
 
   return lines.length > 1 ? `${first} (+${lines.length - 1} more)` : first;
 }

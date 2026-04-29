@@ -8,14 +8,16 @@ import type { DynamicGroup } from "@/lib/sitemapGroups";
 
 type Props = {
   groups: DynamicGroup[];
-  selected: string[];              // selected sitemapUrls
+  selected: string[]; // selected sitemapUrls
   onChange: (urls: string[]) => void;
   disabled?: boolean;
 };
 
 // ── Styled ────────────────────────────────────────────────────────────────────
 
-const Wrap = styled.div` position: relative; `;
+const Wrap = styled.div`
+  position: relative;
+`;
 
 const FieldLabel = styled.label<{ $color: string }>`
   display: block;
@@ -60,7 +62,7 @@ const Popover = styled.div<{ $border: string; $bg: string }>`
   border: 1px solid ${(p) => p.$border};
   border-radius: 8px;
   background: ${(p) => p.$bg};
-  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
   overflow: hidden;
 `;
 
@@ -78,8 +80,12 @@ const OptionRow = styled.button<{ $border: string; $bg: string; $hoverBg: string
   border-bottom: 1px solid ${(p) => p.$border};
   cursor: pointer;
   text-align: left;
-  &:last-child { border-bottom: none; }
-  &:hover { background: ${(p) => p.$hoverBg}; }
+  &:last-child {
+    border-bottom: none;
+  }
+  &:hover {
+    background: ${(p) => p.$hoverBg};
+  }
 `;
 
 const CheckWrap = styled.span<{ $visible: boolean; $color: string }>`
@@ -97,10 +103,14 @@ const HelperText = styled.p<{ $color: string }>`
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function triggerLabel(groups: DynamicGroup[], selected: string[]): { text: string; muted: boolean } {
+function triggerLabel(
+  groups: DynamicGroup[],
+  selected: string[]
+): { text: string; muted: boolean } {
   if (selected.length === 0) return { text: "None — include all dynamic pages", muted: true };
   const selectedGroups = groups.filter((g) => selected.includes(g.sitemapUrl));
-  if (selectedGroups.length <= 2) return { text: selectedGroups.map((g) => g.label).join(", "), muted: false };
+  if (selectedGroups.length <= 2)
+    return { text: selectedGroups.map((g) => g.label).join(", "), muted: false };
   return { text: `${selectedGroups.length} selected`, muted: false };
 }
 
@@ -135,11 +145,15 @@ export default function ExclusionDropdown({ groups, selected, onChange, disabled
   const { text, muted } = triggerLabel(groups, selected);
 
   return (
-    <Wrap ref={wrapRef}>
+    <Wrap data-testid="exclusion-dropdown" ref={wrapRef}>
       <FieldLabel $color={t.text}>Exclude Dynamic Page Types</FieldLabel>
       <Trigger
+        data-testid="exclusion-dropdown-trigger"
+        className="exclusion-dropdown-trigger"
         type="button"
-        onClick={() => { if (!disabled) setOpen((o) => !o); }}
+        onClick={() => {
+          if (!disabled) setOpen((o) => !o);
+        }}
         disabled={disabled}
         $disabled={disabled}
         $border={t.border}
@@ -155,12 +169,20 @@ export default function ExclusionDropdown({ groups, selected, onChange, disabled
       </Trigger>
 
       {open && (
-        <Popover $border={t.border} $bg={t.bg} role="listbox" aria-multiselectable="true">
+        <Popover
+          data-testid="exclusion-dropdown-popover"
+          $border={t.border}
+          $bg={t.bg}
+          role="listbox"
+          aria-multiselectable="true"
+        >
           {groups.map((g) => {
             const isSelected = selected.includes(g.sitemapUrl);
             return (
               <OptionRow
                 key={g.sitemapUrl}
+                data-testid={`exclusion-option-${g.label}`}
+                className={`exclusion-option ${isSelected ? "selected" : ""}`}
                 type="button"
                 role="option"
                 aria-selected={isSelected}
@@ -180,7 +202,7 @@ export default function ExclusionDropdown({ groups, selected, onChange, disabled
         </Popover>
       )}
 
-      <HelperText $color={t.textFaint}>
+      <HelperText data-testid="exclusion-helper-text" $color={t.textFaint}>
         Choose dynamic sitemap groups to exclude from scan.
       </HelperText>
     </Wrap>

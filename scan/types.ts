@@ -67,8 +67,8 @@ export type ScanRunOptions = {
 export type ScanRunResult = {
   pipeline: ScanPipeline;
   results: import("@/lib/types").ScanResult[];
-  startedAt: number;    // Date.now()
-  finishedAt: number;   // Date.now()
+  startedAt: number; // Date.now()
+  finishedAt: number; // Date.now()
   durationMs: number;
   scannedCount: number;
   performanceMode?: PerformanceMode;

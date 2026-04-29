@@ -16,7 +16,7 @@ export function formatDuration(ms: number): string {
 export type ProcessStatus = "completed" | "failed" | "cancelled";
 
 export type TimerState = {
-  duration: number | null;   // ms, null if not yet stopped
+  duration: number | null; // ms, null if not yet stopped
   status: ProcessStatus | null;
 };
 

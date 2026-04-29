@@ -110,8 +110,14 @@ const TagsWrap = styled.div`
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-function Section({ title, children, defaultOpen = false }: {
-  title: string; children: React.ReactNode; defaultOpen?: boolean;
+function Section({
+  title,
+  children,
+  defaultOpen = false,
+}: {
+  title: string;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
 }) {
   const { theme } = useTheme();
   const t = tokens[theme];
@@ -137,7 +143,9 @@ function UrlList({ urls }: { urls: string[] }) {
     <UrlOl>
       {urls.map((u) => (
         <li key={u}>
-          <UrlLink href={u} target="_blank" rel="noreferrer" $color={t.link}>{u}</UrlLink>
+          <UrlLink href={u} target="_blank" rel="noreferrer" $color={t.link}>
+            {u}
+          </UrlLink>
         </li>
       ))}
     </UrlOl>
@@ -154,9 +162,9 @@ export default function FilterDebug({ filter }: Props) {
     <Wrapper $border={t.border}>
       <StatsGrid $gap={t.border}>
         {[
-          { label: "Discovered",    value: filter.totalDiscovered },
-          { label: "After Filter",  value: filter.totalAfterFiltering },
-          { label: "Excluded",      value: filter.excludedUrls.length },
+          { label: "Discovered", value: filter.totalDiscovered },
+          { label: "After Filter", value: filter.totalAfterFiltering },
+          { label: "Excluded", value: filter.excludedUrls.length },
         ].map(({ label, value }) => (
           <StatCell key={label} $bg={t.bgSubtle}>
             <StatValue $color={t.text}>{value}</StatValue>
@@ -165,7 +173,10 @@ export default function FilterDebug({ filter }: Props) {
         ))}
       </StatsGrid>
 
-      <Section title={`Included URLs — first ${Math.min(PREVIEW_LIMIT, filter.includedUrls.length)} of ${filter.totalAfterFiltering}`} defaultOpen>
+      <Section
+        title={`Included URLs — first ${Math.min(PREVIEW_LIMIT, filter.includedUrls.length)} of ${filter.totalAfterFiltering}`}
+        defaultOpen
+      >
         <UrlList urls={filter.includedUrls.slice(0, PREVIEW_LIMIT)} />
         {filter.includedUrls.length > PREVIEW_LIMIT && (
           <More $color={t.textFaint}>… and {filter.includedUrls.length - PREVIEW_LIMIT} more</More>
@@ -173,10 +184,14 @@ export default function FilterDebug({ filter }: Props) {
       </Section>
 
       {filter.excludedUrls.length > 0 && (
-        <Section title={`Excluded URLs — first ${Math.min(PREVIEW_LIMIT, filter.excludedUrls.length)} of ${filter.excludedUrls.length}`}>
+        <Section
+          title={`Excluded URLs — first ${Math.min(PREVIEW_LIMIT, filter.excludedUrls.length)} of ${filter.excludedUrls.length}`}
+        >
           <UrlList urls={filter.excludedUrls.slice(0, PREVIEW_LIMIT)} />
           {filter.excludedUrls.length > PREVIEW_LIMIT && (
-            <More $color={t.textFaint}>… and {filter.excludedUrls.length - PREVIEW_LIMIT} more</More>
+            <More $color={t.textFaint}>
+              … and {filter.excludedUrls.length - PREVIEW_LIMIT} more
+            </More>
           )}
         </Section>
       )}
@@ -185,7 +200,9 @@ export default function FilterDebug({ filter }: Props) {
         <Section title={`Active Exclude Patterns (${filter.excludedPatterns.length})`}>
           <TagsWrap>
             {filter.excludedPatterns.map((p) => (
-              <PatternCode key={p} $bg={t.bgMuted} $color={t.text}>{p}</PatternCode>
+              <PatternCode key={p} $bg={t.bgMuted} $color={t.text}>
+                {p}
+              </PatternCode>
             ))}
           </TagsWrap>
         </Section>

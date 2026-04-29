@@ -6,12 +6,12 @@
 //     reflect exactly what a browser would display.
 
 const NAMED: Record<string, string> = {
-  amp:  "&",
+  amp: "&",
   quot: '"',
   apos: "'",
-  "#39": "'",   // numeric alias for apostrophe often written as &#39;
-  lt:   "<",
-  gt:   ">",
+  "#39": "'", // numeric alias for apostrophe often written as &#39;
+  lt: "<",
+  gt: ">",
   nbsp: "\u00a0",
 };
 

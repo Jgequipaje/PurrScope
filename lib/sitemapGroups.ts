@@ -2,7 +2,7 @@
 // No React, no side effects.
 
 export type DynamicGroup = {
-  label: string;      // e.g. "Blog"
+  label: string; // e.g. "Blog"
   sitemapUrl: string; // e.g. "https://example.com/sitemap-blog-dpages.xml"
 };
 
@@ -45,7 +45,9 @@ export function labelFromDPagesSitemapUrl(url: string): string {
 
   // Step 5: if empty, fall back to filename minus .xml
   if (titled.length === 0) {
-    return filename.endsWith(".xml") ? filename.slice(0, filename.length - ".xml".length) : filename;
+    return filename.endsWith(".xml")
+      ? filename.slice(0, filename.length - ".xml".length)
+      : filename;
   }
 
   return titled;

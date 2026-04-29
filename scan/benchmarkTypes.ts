@@ -20,12 +20,12 @@ export type BenchmarkRunMode = "cold" | "warm";
  * Both pipelines MUST use the exact same snapshot for a fair comparison.
  */
 export type BenchmarkSnapshot = {
-  urls: string[];           // exact ordered URL list (post-filter, post-limit)
+  urls: string[]; // exact ordered URL list (post-filter, post-limit)
   scanScope: ScanScope;
   scanLimit: number | null;
   queueSize: number;
-  exclusions: string[];     // selected dynamic group sitemap URLs
-  capturedAt: number;       // Date.now() when snapshot was taken
+  exclusions: string[]; // selected dynamic group sitemap URLs
+  capturedAt: number; // Date.now() when snapshot was taken
 };
 
 // ── Per-run metrics ───────────────────────────────────────────────────────────
@@ -44,18 +44,18 @@ export type BenchmarkMetrics = {
   failedCount: number;
   blockedCount: number;
   errorCount: number;
-  fetchCount: number;         // pages resolved via fetch alone
-  playwrightCount: number;    // pages that needed Playwright fallback
+  fetchCount: number; // pages resolved via fetch alone
+  playwrightCount: number; // pages that needed Playwright fallback
   // Scan config snapshot (for tying runs to the same setup)
   scanScope: string;
-  scanLimit: number | null;   // null = no limit (scan all)
+  scanLimit: number | null; // null = no limit (scan all)
   queueSize: number;
   // Pipeline notes
   concurrency: number | null; // null = sequential (previous process)
   browserReuse: boolean;
   cacheMode: "no-store" | "default"; // HTTP fetch cache behaviour
   // Timestamp
-  ranAt: number;              // Date.now()
+  ranAt: number; // Date.now()
 };
 
 export type ConsistencyReport = {
@@ -66,6 +66,5 @@ export type ConsistencyReport = {
   descriptionMismatch: number;
   statusMatch: number;
   statusMismatch: number;
-  matchRate: number;          // 0–1, overall field agreement
+  matchRate: number; // 0–1, overall field agreement
 };
-

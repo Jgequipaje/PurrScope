@@ -227,7 +227,9 @@ export async function resolveSitemapUrls(input: string): Promise<SitemapCrawlRes
 
   await crawlSitemap(rootUrl, state);
 
-  console.log(`[sitemap] Crawl complete — ${state.sitemapUrls.length} sitemaps, ${state.pageUrls.length} pages`);
+  console.log(
+    `[sitemap] Crawl complete — ${state.sitemapUrls.length} sitemaps, ${state.pageUrls.length} pages`
+  );
 
   if (state.pageUrls.length === 0) {
     throw new Error("Sitemap was found but contained no page URLs.");

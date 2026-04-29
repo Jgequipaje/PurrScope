@@ -3,11 +3,7 @@
 import { RiInformationLine, RiCloseLine } from "react-icons/ri";
 import styled, { keyframes } from "styled-components";
 import { useTheme, tokens } from "@/lib/theme";
-import {
-  isValidUrl,
-  urlValidationHint,
-  getBaseUrlForSitemapCrawl,
-} from "@/lib/urlValidation";
+import { isValidUrl, urlValidationHint, getBaseUrlForSitemapCrawl } from "@/lib/urlValidation";
 
 type Props = {
   value: string;
@@ -47,7 +43,9 @@ const UrlInput = styled.input<{
   color: ${(p) => p.$text};
   font-family: inherit;
   outline: none;
-  transition: border-color 0.15s, opacity 0.15s;
+  transition:
+    border-color 0.15s,
+    opacity 0.15s;
 
   &:disabled {
     opacity: 0.55;
@@ -73,8 +71,12 @@ const CrawlButton = styled.button<{ $disabled: boolean }>`
   opacity: ${(p) => (p.$disabled ? 0.65 : 1)};
   transition: opacity 0.15s;
 
-  &:not(:disabled):hover { opacity: 0.85; }
-  &:not(:disabled):active { opacity: 0.7; }
+  &:not(:disabled):hover {
+    opacity: 0.85;
+  }
+  &:not(:disabled):active {
+    opacity: 0.7;
+  }
 
   @media (min-width: 540px) {
     width: auto;
@@ -101,8 +103,12 @@ const CancelButton = styled.button`
   gap: 5px;
   transition: opacity 0.15s;
 
-  &:hover { opacity: 0.7; }
-  &:active { opacity: 0.5; }
+  &:hover {
+    opacity: 0.7;
+  }
+  &:active {
+    opacity: 0.5;
+  }
 
   @media (min-width: 540px) {
     width: auto;
@@ -176,8 +182,7 @@ export default function SitemapInput({
   const hint = value.trim() ? urlValidationHint(value) : null;
   const baseUrl = valid ? getBaseUrlForSitemapCrawl(value) : null;
   const hasPath =
-    baseUrl !== null &&
-    value.trim().replace(/\/$/, "") !== baseUrl.replace(/\/$/, "");
+    baseUrl !== null && value.trim().replace(/\/$/, "") !== baseUrl.replace(/\/$/, "");
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     onChange(e.target.value);
@@ -188,6 +193,8 @@ export default function SitemapInput({
     <>
       <Row>
         <UrlInput
+          data-testid="sitemap-url-input"
+          className="sitemap-url-input"
           type="text"
           placeholder="https://example.com"
           value={value}
@@ -202,20 +209,27 @@ export default function SitemapInput({
         />
 
         {loading ? (
-          <CancelButton onClick={onCancel} type="button">
+          <CancelButton data-testid="cancel-crawl-btn" onClick={onCancel} type="button">
             <RiCloseLine size={15} /> Cancel
           </CancelButton>
         ) : (
-          <CrawlButton onClick={onScan} disabled={disabled} $disabled={disabled}>
+          <CrawlButton
+            data-testid="crawl-sitemap-btn"
+            onClick={onScan}
+            disabled={disabled}
+            $disabled={disabled}
+          >
             Crawl Sitemap
           </CrawlButton>
         )}
       </Row>
 
-      <ValidationHint $color={t.failText}>{hint ?? ""}</ValidationHint>
+      <ValidationHint data-testid="validation-hint" $color={t.failText}>
+        {hint ?? ""}
+      </ValidationHint>
 
       {hasPath && (
-        <InfoCallout $bg={t.infoBg} $border={t.infoBorder}>
+        <InfoCallout data-testid="sitemap-root-info" $bg={t.infoBg} $border={t.infoBorder}>
           <InfoIcon $color={t.infoText}>
             <RiInformationLine size={14} />
           </InfoIcon>
@@ -226,10 +240,9 @@ export default function SitemapInput({
         </InfoCallout>
       )}
 
-      <Hint $color={t.textFaint}>
-        PurrScope tries <code>/sitemap.xml</code> then{" "}
-        <code>/sitemap_index.xml</code>. Once discovered, you can review the
-        filtered pages before scanning.
+      <Hint data-testid="sitemap-hint" $color={t.textFaint}>
+        PurrScope tries <code>/sitemap.xml</code> then <code>/sitemap_index.xml</code>. Once
+        discovered, you can review the filtered pages before scanning.
       </Hint>
     </>
   );

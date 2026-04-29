@@ -57,8 +57,12 @@ const ScanButton = styled.button<{ $disabled: boolean }>`
   margin-bottom: 1.75rem;
   width: 100%;
   transition: opacity 0.15s;
-  &:not(:disabled):hover { opacity: 0.85; }
-  &:not(:disabled):active { opacity: 0.7; }
+  &:not(:disabled):hover {
+    opacity: 0.85;
+  }
+  &:not(:disabled):active {
+    opacity: 0.7;
+  }
 
   @media (min-width: 540px) {
     width: auto;
@@ -84,25 +88,41 @@ const CancelButton = styled.button`
   justify-content: center;
   gap: 5px;
   transition: opacity 0.15s;
-  &:hover { opacity: 0.7; }
-  &:active { opacity: 0.5; }
+  &:hover {
+    opacity: 0.7;
+  }
+  &:active {
+    opacity: 0.5;
+  }
 
   @media (min-width: 540px) {
     width: auto;
   }
 `;
 
-export default function ManualInput({ value, onChange, onScan, onCancel, loading, isProcessing }: Props) {
+export default function ManualInput({
+  value,
+  onChange,
+  onScan,
+  onCancel,
+  loading,
+  isProcessing,
+}: Props) {
   const { theme } = useTheme();
   const t = tokens[theme];
 
-  const count = value.split("\n").map((u) => u.trim()).filter(Boolean).length;
+  const count = value
+    .split("\n")
+    .map((u) => u.trim())
+    .filter(Boolean).length;
   const atLimit = count > MAX_URLS;
   const disabled = loading || count === 0;
 
   return (
     <>
       <Textarea
+        data-testid="manual-url-input"
+        className="manual-url-input"
         rows={5}
         placeholder={"https://example.com\nhttps://example.com/about\nhttps://example.com/contact"}
         value={value}
@@ -112,15 +132,25 @@ export default function ManualInput({ value, onChange, onScan, onCancel, loading
         $bg={t.bg}
         $text={t.text}
       />
-      <Counter $warn={atLimit} $warnColor={t.failText} $mutedColor={t.textFaint}>
+      <Counter
+        data-testid="url-counter"
+        $warn={atLimit}
+        $warnColor={t.failText}
+        $mutedColor={t.textFaint}
+      >
         {count} / {MAX_URLS} URLs{atLimit && " — limit reached, remove a URL to add another"}
       </Counter>
       {loading ? (
-        <CancelButton onClick={onCancel} type="button">
+        <CancelButton data-testid="cancel-manual-scan-btn" onClick={onCancel} type="button">
           <RiCloseLine size={15} /> Cancel Scan
         </CancelButton>
       ) : (
-        <ScanButton onClick={onScan} disabled={disabled} $disabled={disabled}>
+        <ScanButton
+          data-testid="start-manual-scan-btn"
+          onClick={onScan}
+          disabled={disabled}
+          $disabled={disabled}
+        >
           Start Scan
         </ScanButton>
       )}

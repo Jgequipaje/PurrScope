@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { ThemeProvider } from "@/lib/theme";
 import StyledComponentsRegistry from "@/lib/registry";
-import QAFloatingButton from "@/features/qa-center/components/QAFloatingButton";
-import QADrawer from "@/features/qa-center/components/QADrawer";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://purrscope.app";
 const SITE_NAME = "PurrScope";
@@ -53,7 +51,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         {/* Blocking script — runs before any paint to set data-theme from localStorage.
             Prevents FOUC by ensuring the correct theme is applied before React hydrates. */}
-        <script dangerouslySetInnerHTML={{ __html: `
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
           (function() {
             try {
               var saved = localStorage.getItem("theme");
@@ -65,26 +65,35 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               document.documentElement.setAttribute("data-theme", "dark");
             }
           })();
-        ` }} />
+        `,
+          }}
+        />
         {/* JSON-LD structured data */}
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "WebApplication",
-            "name": "PurrScope",
-            "url": SITE_URL,
-            "description": DESCRIPTION,
-            "applicationCategory": "DeveloperApplication",
-            "operatingSystem": "Any",
-            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-            "author": { "@type": "Person", "name": "byjeff.dev", "url": "https://www.byjeff.dev/" },
-          }) }}
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebApplication",
+              name: "PurrScope",
+              url: SITE_URL,
+              description: DESCRIPTION,
+              applicationCategory: "DeveloperApplication",
+              operatingSystem: "Any",
+              offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+              author: { "@type": "Person", name: "byjeff.dev", url: "https://www.byjeff.dev/" },
+            }),
+          }}
         />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
-        <style dangerouslySetInnerHTML={{ __html: `
+        <link
+          href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap"
+          rel="stylesheet"
+        />
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
           *, *::before, *::after { box-sizing: border-box; }
           /* Set background on html immediately so there is no white flash before body renders */
           html[data-theme="dark"]  { background: #09090b; color: #fafafa; }
@@ -99,15 +108,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           body.theme-ready {
             transition: background 0.2s ease, color 0.2s ease;
           }
-        ` }} />
+        `,
+          }}
+        />
       </head>
       <body suppressHydrationWarning>
         <StyledComponentsRegistry>
-          <ThemeProvider>
-            {children}
-            {!process.env.NEXT_PUBLIC_HIDE_QA && <QAFloatingButton />}
-            {!process.env.NEXT_PUBLIC_HIDE_QA && <QADrawer />}
-          </ThemeProvider>
+          <ThemeProvider>{children}</ThemeProvider>
         </StyledComponentsRegistry>
       </body>
     </html>

@@ -17,10 +17,10 @@ export type ScanResult = {
   methodUsed: "fetch" | "playwright";
   error?: string;
   // Debug fields populated by the scanner
-  finalUrl?: string;       // actual URL after redirects
+  finalUrl?: string; // actual URL after redirects
   titleFound?: boolean;
   descriptionFound?: boolean;
-  attempts?: number;       // how many extraction attempts were made
+  attempts?: number; // how many extraction attempts were made
 };
 
 export type Mode = "manual" | "sitemap";
@@ -31,8 +31,8 @@ export type ScanScope = "all" | "static" | "dynamic";
 
 // Per-base-path grouping info used in debug output
 export type PathGroup = {
-  basePath: string;   // e.g. "/blog"
-  count: number;      // how many URLs share this base path
+  basePath: string; // e.g. "/blog"
+  count: number; // how many URLs share this base path
   isDynamic: boolean; // true when count > DYNAMIC_THRESHOLD
 };
 
@@ -44,11 +44,11 @@ export type PageEntry = {
 
 // Result of running the URL filter pipeline
 export type FilterResult = {
-  includedUrls: string[];           // final URLs to scan
-  excludedUrls: string[];           // URLs removed by the filter
+  includedUrls: string[]; // final URLs to scan
+  excludedUrls: string[]; // URLs removed by the filter
   collapsedMappings: Record<string, string>; // kept for backward compat, always empty
   groupedPathCounts: PathGroup[];
-  excludedPatterns: string[];       // e.g. ["/blog/*", "/properties/*"]
+  excludedPatterns: string[]; // e.g. ["/blog/*", "/properties/*"]
   totalDiscovered: number;
   totalAfterFiltering: number;
   totalCollapsed: number;
@@ -56,7 +56,7 @@ export type FilterResult = {
 
 // Full result returned by the sitemap crawler + filter pipeline
 export type SitemapCrawlResult = {
-  pageUrls: string[];       // flat list for backward compat
+  pageUrls: string[]; // flat list for backward compat
   pageEntries: PageEntry[]; // urls with their source sitemap
   sitemapUrls: string[];
   pageCount: number;

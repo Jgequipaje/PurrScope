@@ -6,7 +6,12 @@
 import type { ScanResult } from "@/lib/types";
 import type { ScanPipeline, PerformanceMode } from "@/scan/types";
 import type { ScanScope } from "@/lib/types";
-import type { BenchmarkMetrics, BenchmarkRunMode, BenchmarkSnapshot, ConsistencyReport } from "@/scan/benchmarkTypes";
+import type {
+  BenchmarkMetrics,
+  BenchmarkRunMode,
+  BenchmarkSnapshot,
+  ConsistencyReport,
+} from "@/scan/benchmarkTypes";
 
 // ── Snapshot ──────────────────────────────────────────────────────────────────
 
@@ -21,7 +26,7 @@ export function createSnapshot(
   exclusions: string[]
 ): BenchmarkSnapshot {
   return {
-    urls: [...urls],   // defensive copy — freeze the list
+    urls: [...urls], // defensive copy — freeze the list
     scanScope: scope,
     scanLimit: limit,
     queueSize: urls.length,
@@ -50,13 +55,13 @@ export function computeMetrics(
     runMode: BenchmarkRunMode;
   }
 ): BenchmarkMetrics {
-  const successCount   = results.filter((r) => r.scanStatus === "success").length;
-  const blockedCount   = results.filter((r) => r.scanStatus === "Blocked (automation)").length;
-  const errorCount     = results.filter((r) => r.scanStatus === "scan_error").length;
-  const failedCount    = results.filter(
+  const successCount = results.filter((r) => r.scanStatus === "success").length;
+  const blockedCount = results.filter((r) => r.scanStatus === "Blocked (automation)").length;
+  const errorCount = results.filter((r) => r.scanStatus === "scan_error").length;
+  const failedCount = results.filter(
     (r) => r.titleStatus === "Fail" || r.descriptionStatus === "Fail"
   ).length;
-  const fetchCount      = results.filter((r) => r.methodUsed === "fetch").length;
+  const fetchCount = results.filter((r) => r.methodUsed === "fetch").length;
   const playwrightCount = results.filter((r) => r.methodUsed === "playwright").length;
 
   const urlsScanned = results.length;
@@ -90,26 +95,29 @@ export function computeMetrics(
  * Compares two result sets for the same URLs.
  * Matches by URL — only URLs present in both sets are compared.
  */
-export function compareResults(
-  a: ScanResult[],
-  b: ScanResult[]
-): ConsistencyReport {
+export function compareResults(a: ScanResult[], b: ScanResult[]): ConsistencyReport {
   const mapB = new Map(b.map((r) => [r.url, r]));
   const compared = a.filter((r) => mapB.has(r.url));
 
   if (compared.length === 0) {
     return {
       totalCompared: 0,
-      titleMatch: 0, titleMismatch: 0,
-      descriptionMatch: 0, descriptionMismatch: 0,
-      statusMatch: 0, statusMismatch: 0,
+      titleMatch: 0,
+      titleMismatch: 0,
+      descriptionMatch: 0,
+      descriptionMismatch: 0,
+      statusMatch: 0,
+      statusMismatch: 0,
       matchRate: 0,
     };
   }
 
-  let titleMatch = 0, titleMismatch = 0;
-  let descriptionMatch = 0, descriptionMismatch = 0;
-  let statusMatch = 0, statusMismatch = 0;
+  let titleMatch = 0,
+    titleMismatch = 0;
+  let descriptionMatch = 0,
+    descriptionMismatch = 0;
+  let statusMatch = 0,
+    statusMismatch = 0;
 
   for (const ra of compared) {
     const rb = mapB.get(ra.url)!;
@@ -125,9 +133,12 @@ export function compareResults(
 
   return {
     totalCompared: compared.length,
-    titleMatch, titleMismatch,
-    descriptionMatch, descriptionMismatch,
-    statusMatch, statusMismatch,
+    titleMatch,
+    titleMismatch,
+    descriptionMatch,
+    descriptionMismatch,
+    statusMatch,
+    statusMismatch,
     matchRate,
   };
 }
@@ -148,7 +159,7 @@ export function fmtDuration(ms: number): string {
  */
 export function compareSpeed(a: number, b: number): "faster" | "slower" | "same" {
   const diff = a - b;
-  if (Math.abs(diff) < 200) return "same";   // < 200ms difference = negligible
+  if (Math.abs(diff) < 200) return "same"; // < 200ms difference = negligible
   return diff < 0 ? "faster" : "slower";
 }
 

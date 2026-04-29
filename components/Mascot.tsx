@@ -51,19 +51,27 @@ const Wrap = styled.div<{ $state: MascotState; $size: number }>`
   gap: 10px;
   user-select: none;
 
-  ${(p) => p.$state === "idle" && css`
-    animation: ${idleBounce} 3s ease-in-out infinite;
-  `}
-  ${(p) => p.$state === "scanning" && css`
-    animation: ${scanSwing} 1.2s ease-in-out infinite;
-    transform-origin: bottom center;
-  `}
-  ${(p) => p.$state === "pass" && css`
-    animation: ${passPopIn} 0.5s ease both;
-  `}
-  ${(p) => p.$state === "fail" && css`
-    animation: ${failShake} 0.6s ease both;
-  `}
+  ${(p) =>
+    p.$state === "idle" &&
+    css`
+      animation: ${idleBounce} 3s ease-in-out infinite;
+    `}
+  ${(p) =>
+    p.$state === "scanning" &&
+    css`
+      animation: ${scanSwing} 1.2s ease-in-out infinite;
+      transform-origin: bottom center;
+    `}
+  ${(p) =>
+    p.$state === "pass" &&
+    css`
+      animation: ${passPopIn} 0.5s ease both;
+    `}
+  ${(p) =>
+    p.$state === "fail" &&
+    css`
+      animation: ${failShake} 0.6s ease both;
+    `}
 `;
 
 const ImageWrap = styled.div<{ $state: MascotState; $size: number }>`
@@ -72,27 +80,32 @@ const ImageWrap = styled.div<{ $state: MascotState; $size: number }>`
   border-radius: 50%;
   flex-shrink: 0;
   position: relative;
-  background: ${(p) => (p.$state === "idle" || p.$state === "scanning") ? "rgba(124, 58, 237, 0.3)" : "transparent"};
+  background: ${(p) =>
+    p.$state === "idle" || p.$state === "scanning" ? "rgba(124, 58, 237, 0.3)" : "transparent"};
   display: flex;
   align-items: center;
   justify-content: center;
   transition: background 0.3s ease;
 
-  ${(p) => (p.$state === "idle" || p.$state === "scanning") && css`
-    animation: ${glowPulse} 2.5s ease-in-out infinite;
-  `}
+  ${(p) =>
+    (p.$state === "idle" || p.$state === "scanning") &&
+    css`
+      animation: ${glowPulse} 2.5s ease-in-out infinite;
+    `}
 
   img {
     width: 88%;
     height: 88%;
     object-fit: contain;
     display: block;
-    filter: ${p =>
-      p.$state === "pass"    ? "drop-shadow(0 0 8px rgba(74, 222, 128, 0.6))" :
-      p.$state === "fail"    ? "drop-shadow(0 0 8px rgba(251, 191, 36, 0.6))" :
-      p.$state === "scanning"? "drop-shadow(0 0 10px rgba(124, 58, 237, 0.5))" :
-                               "drop-shadow(0 0 6px rgba(124, 58, 237, 0.3))"
-    };
+    filter: ${(p) =>
+      p.$state === "pass"
+        ? "drop-shadow(0 0 8px rgba(74, 222, 128, 0.6))"
+        : p.$state === "fail"
+          ? "drop-shadow(0 0 8px rgba(251, 191, 36, 0.6))"
+          : p.$state === "scanning"
+            ? "drop-shadow(0 0 10px rgba(124, 58, 237, 0.5))"
+            : "drop-shadow(0 0 6px rgba(124, 58, 237, 0.3))"};
   }
 `;
 
@@ -133,10 +146,10 @@ const Bubble = styled.div<{ $bg: string; $border: string; $color: string }>`
 // ── Messages ──────────────────────────────────────────────────────────────────
 
 const MESSAGES: Record<MascotState, string> = {
-  idle:     "Ready to sniff out SEO issues 🔍",
+  idle: "Ready to sniff out SEO issues 🔍",
   scanning: "Crawling & scanning pages…",
-  pass:     "All pages look great! ✅",
-  fail:     "Found some issues to fix ⚠️",
+  pass: "All pages look great! ✅",
+  fail: "Found some issues to fix ⚠️",
 };
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -146,22 +159,31 @@ export default function Mascot({ state, size = 100 }: Props) {
   const t = tokens[theme];
 
   const bubbleBg =
-    state === "pass"    ? t.successBg :
-    state === "fail"    ? t.warnBg :
-    state === "scanning"? t.infoBg :
-    t.bgSubtle;
+    state === "pass"
+      ? t.successBg
+      : state === "fail"
+        ? t.warnBg
+        : state === "scanning"
+          ? t.infoBg
+          : t.bgSubtle;
 
   const bubbleBorder =
-    state === "pass"    ? t.passText :
-    state === "fail"    ? t.warnBorder :
-    state === "scanning"? t.infoBorder :
-    t.border;
+    state === "pass"
+      ? t.passText
+      : state === "fail"
+        ? t.warnBorder
+        : state === "scanning"
+          ? t.infoBorder
+          : t.border;
 
   const bubbleColor =
-    state === "pass"    ? t.successText :
-    state === "fail"    ? t.warnText :
-    state === "scanning"? t.infoText :
-    t.textMuted;
+    state === "pass"
+      ? t.successText
+      : state === "fail"
+        ? t.warnText
+        : state === "scanning"
+          ? t.infoText
+          : t.textMuted;
 
   return (
     <Wrap $state={state} $size={size}>

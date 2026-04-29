@@ -25,9 +25,9 @@ PurrScope scans websites for SEO issues by checking page titles and meta descrip
 
 ## SEO Rules
 
-| Field | Pass range |
-|---|---|
-| Title | 45–61 characters |
+| Field            | Pass range         |
+| ---------------- | ------------------ |
+| Title            | 45–61 characters   |
 | Meta description | 145–161 characters |
 
 Pages are classified as `success`, `missing`, `scan_error`, or `Blocked (automation)`.
@@ -46,6 +46,7 @@ PurrScope runs locally because it uses Playwright (headless Chromium) as a fallb
 ### Quick start (Windows)
 
 Double-click `start-dev.bat` — it will:
+
 1. Check Node.js is installed
 2. Install dependencies if needed
 3. Start the dev server at `http://localhost:3000`
