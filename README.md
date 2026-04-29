@@ -2,7 +2,7 @@
 
 > Automated SEO & Compliance QA — scan page titles and meta descriptions across any site, flag issues, and review results.
 
-Built by [byjeff.dev](https://www.byjeff.dev/)
+Built by [byjeff.dev](https://www.byjeff.dev/)ss
 
 ---
 
