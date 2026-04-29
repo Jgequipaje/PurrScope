@@ -33,11 +33,12 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-.kiro
-
 # Playwright
 /test-results/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+RELEASE_TEMPLATE.md
+VERSIONING.md
