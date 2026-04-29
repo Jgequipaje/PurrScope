@@ -21,13 +21,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Provide at least one URL." }, { status: 400 });
   }
   if ((urls as string[]).length > 500) {
-    return NextResponse.json({ error: "Too many URLs. Maximum is 500 per request." }, { status: 400 });
+    return NextResponse.json(
+      { error: "Too many URLs. Maximum is 500 per request." },
+      { status: 400 }
+    );
   }
 
   // Apply limit only when explicitly passed
-  const toScan: string[] = limit !== undefined
-    ? (urls as string[]).slice(0, limit)
-    : (urls as string[]);
+  const toScan: string[] =
+    limit !== undefined ? (urls as string[]).slice(0, limit) : (urls as string[]);
 
   for (const url of toScan) {
     if (!url.startsWith("http")) {
@@ -43,7 +45,12 @@ export async function POST(req: NextRequest) {
     const startedAt = Date.now();
     const results = await scanUrls(toScan, req.signal, noCache);
     const durationMs = Date.now() - startedAt;
-    return NextResponse.json({ results, scanned: results.length, durationMs, runMode: body?.runMode ?? "warm" });
+    return NextResponse.json({
+      results,
+      scanned: results.length,
+      durationMs,
+      runMode: body?.runMode ?? "warm",
+    });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json({ error: `Scanner failed: ${message}` }, { status: 500 });

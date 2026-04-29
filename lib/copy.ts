@@ -13,8 +13,11 @@ export function buildCopyText(results: ScanResult[]): string {
   return results
     .map((r) => {
       const path = (() => {
-        try { return new URL(r.url).pathname || "/"; }
-        catch { return r.url; }
+        try {
+          return new URL(r.url).pathname || "/";
+        } catch {
+          return r.url;
+        }
       })();
 
       if (r.error) return `❌ ${path} — Error: ${r.error}`;
@@ -24,13 +27,17 @@ export function buildCopyText(results: ScanResult[]): string {
       if (!r.title) {
         issues.push("Title missing");
       } else if (r.titleStatus === "Fail") {
-        issues.push(`Title ${r.titleLength < 45 ? "too short" : "too long"} (${r.titleLength} chars)`);
+        issues.push(
+          `Title ${r.titleLength < 45 ? "too short" : "too long"} (${r.titleLength} chars)`
+        );
       }
 
       if (!r.description) {
         issues.push("Description missing");
       } else if (r.descriptionStatus === "Fail") {
-        issues.push(`Description ${r.descriptionLength < 145 ? "too short" : "too long"} (${r.descriptionLength} chars)`);
+        issues.push(
+          `Description ${r.descriptionLength < 145 ? "too short" : "too long"} (${r.descriptionLength} chars)`
+        );
       }
 
       return issues.length === 0

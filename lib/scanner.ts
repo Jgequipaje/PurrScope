@@ -6,18 +6,28 @@ import type { ScanResult, ScanStatus } from "./types";
 
 export const TITLE_MIN = 45;
 export const TITLE_MAX = 61;
-export const DESC_MIN  = 145;
-export const DESC_MAX  = 161;
-export const MAX_MANUAL_URLS  = 10;
+export const DESC_MIN = 145;
+export const DESC_MAX = 161;
+export const MAX_MANUAL_URLS = 10;
 export const MAX_SITEMAP_URLS = 1000;
 
 const FETCH_TIMEOUT_MS = 12000;
 
 const BLOCKED_SIGNALS = [
-  "just a moment", "checking your browser", "please wait",
-  "ddos protection", "cloudflare", "access denied", "403 forbidden",
-  "sign in to continue", "log in to continue", "verify you are human",
-  "enable javascript", "bot protection", "security check", "attention required",
+  "just a moment",
+  "checking your browser",
+  "please wait",
+  "ddos protection",
+  "cloudflare",
+  "access denied",
+  "403 forbidden",
+  "sign in to continue",
+  "log in to continue",
+  "verify you are human",
+  "enable javascript",
+  "bot protection",
+  "security check",
+  "attention required",
 ];
 
 function looksBlocked(title: string, bodySnippet: string): boolean {
@@ -39,13 +49,21 @@ function descStatus(description: string | null, length: number): "Pass" | "Fail"
   return description && length >= DESC_MIN && length <= DESC_MAX ? "Pass" : "Fail";
 }
 
-function deriveScanStatus(title: string | null, description: string | null, error?: string): ScanStatus {
+function deriveScanStatus(
+  title: string | null,
+  description: string | null,
+  error?: string
+): ScanStatus {
   if (error) return "scan_error";
   if (!title && !description) return "missing";
   return "success";
 }
 
-function parseHtml(html: string): { title: string | null; description: string | null; bodySnippet: string } {
+function parseHtml(html: string): {
+  title: string | null;
+  description: string | null;
+  bodySnippet: string;
+} {
   const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
   const title = titleMatch ? titleMatch[1].trim().replace(/\s+/g, " ") || null : null;
   const descMatch =
@@ -54,12 +72,19 @@ function parseHtml(html: string): { title: string | null; description: string | 
   const description = descMatch ? descMatch[1].trim() || null : null;
   const bodyMatch = html.match(/<body[^>]*>([\s\S]{0,2000})/i);
   const bodySnippet = bodyMatch
-    ? bodyMatch[1].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").slice(0, 500)
+    ? bodyMatch[1]
+        .replace(/<[^>]+>/g, " ")
+        .replace(/\s+/g, " ")
+        .slice(0, 500)
     : "";
   return { title, description, bodySnippet };
 }
 
-export async function scanUrls(urls: string[], signal?: AbortSignal, noCache = false): Promise<ScanResult[]> {
+export async function scanUrls(
+  urls: string[],
+  signal?: AbortSignal,
+  noCache = false
+): Promise<ScanResult[]> {
   const results: ScanResult[] = [];
 
   for (const requestedUrl of urls) {
@@ -75,7 +100,7 @@ export async function scanUrls(urls: string[], signal?: AbortSignal, noCache = f
         cache: noCache ? "no-store" : "default",
         headers: {
           "User-Agent": "Mozilla/5.0 (compatible; PurrScope/1.0)",
-          "Accept": "text/html,application/xhtml+xml",
+          Accept: "text/html,application/xhtml+xml",
           "Accept-Language": "en-US,en;q=0.9",
         },
         redirect: "follow",
@@ -83,13 +108,41 @@ export async function scanUrls(urls: string[], signal?: AbortSignal, noCache = f
       clearTimeout(timer);
 
       if (!res.ok) {
-        results.push({ url: requestedUrl, title: null, titleLength: 0, titleStatus: "Fail", description: null, descriptionLength: 0, descriptionStatus: "Fail", scanStatus: "scan_error", methodUsed: "fetch", error: `HTTP ${res.status}`, titleFound: false, descriptionFound: false, attempts: 1 });
+        results.push({
+          url: requestedUrl,
+          title: null,
+          titleLength: 0,
+          titleStatus: "Fail",
+          description: null,
+          descriptionLength: 0,
+          descriptionStatus: "Fail",
+          scanStatus: "scan_error",
+          methodUsed: "fetch",
+          error: `HTTP ${res.status}`,
+          titleFound: false,
+          descriptionFound: false,
+          attempts: 1,
+        });
         continue;
       }
 
       const ct = res.headers.get("content-type") ?? "";
       if (!ct.includes("text/html")) {
-        results.push({ url: requestedUrl, title: null, titleLength: 0, titleStatus: "Fail", description: null, descriptionLength: 0, descriptionStatus: "Fail", scanStatus: "scan_error", methodUsed: "fetch", error: `Non-HTML (${ct})`, titleFound: false, descriptionFound: false, attempts: 1 });
+        results.push({
+          url: requestedUrl,
+          title: null,
+          titleLength: 0,
+          titleStatus: "Fail",
+          description: null,
+          descriptionLength: 0,
+          descriptionStatus: "Fail",
+          scanStatus: "scan_error",
+          methodUsed: "fetch",
+          error: `Non-HTML (${ct})`,
+          titleFound: false,
+          descriptionFound: false,
+          attempts: 1,
+        });
         continue;
       }
 
@@ -98,7 +151,21 @@ export async function scanUrls(urls: string[], signal?: AbortSignal, noCache = f
       const finalUrl = res.url || requestedUrl;
 
       if (looksBlocked(rawTitle ?? "", bodySnippet)) {
-        results.push({ url: requestedUrl, finalUrl, title: null, titleLength: 0, titleStatus: "Fail", description: null, descriptionLength: 0, descriptionStatus: "Fail", scanStatus: "Blocked (automation)", methodUsed: "fetch", titleFound: false, descriptionFound: false, attempts: 1 });
+        results.push({
+          url: requestedUrl,
+          finalUrl,
+          title: null,
+          titleLength: 0,
+          titleStatus: "Fail",
+          description: null,
+          descriptionLength: 0,
+          descriptionStatus: "Fail",
+          scanStatus: "Blocked (automation)",
+          methodUsed: "fetch",
+          titleFound: false,
+          descriptionFound: false,
+          attempts: 1,
+        });
         continue;
       }
 
@@ -108,15 +175,37 @@ export async function scanUrls(urls: string[], signal?: AbortSignal, noCache = f
       const descriptionLength = description?.length ?? 0;
 
       results.push({
-        url: requestedUrl, finalUrl,
-        title, titleLength, titleStatus: titleStatus(title, titleLength),
-        description, descriptionLength, descriptionStatus: descStatus(description, descriptionLength),
+        url: requestedUrl,
+        finalUrl,
+        title,
+        titleLength,
+        titleStatus: titleStatus(title, titleLength),
+        description,
+        descriptionLength,
+        descriptionStatus: descStatus(description, descriptionLength),
         scanStatus: deriveScanStatus(title, description),
-        methodUsed: "fetch", titleFound: !!title, descriptionFound: !!description, attempts: 1,
+        methodUsed: "fetch",
+        titleFound: !!title,
+        descriptionFound: !!description,
+        attempts: 1,
       });
     } catch (err) {
       const error = err instanceof Error ? err.message : "fetch error";
-      results.push({ url: requestedUrl, title: null, titleLength: 0, titleStatus: "Fail", description: null, descriptionLength: 0, descriptionStatus: "Fail", scanStatus: "scan_error", methodUsed: "fetch", error, titleFound: false, descriptionFound: false, attempts: 1 });
+      results.push({
+        url: requestedUrl,
+        title: null,
+        titleLength: 0,
+        titleStatus: "Fail",
+        description: null,
+        descriptionLength: 0,
+        descriptionStatus: "Fail",
+        scanStatus: "scan_error",
+        methodUsed: "fetch",
+        error,
+        titleFound: false,
+        descriptionFound: false,
+        attempts: 1,
+      });
     }
   }
 

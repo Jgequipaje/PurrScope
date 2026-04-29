@@ -16,12 +16,27 @@ type Props = {
 };
 
 const SCOPE_OPTIONS: { value: ScanScope; label: string; description: string }[] = [
-  { value: "all",     label: "All Pages",         description: "Scan every URL discovered in the sitemap (sitemap-static.xml + all -dpages.xml files)." },
-  { value: "static",  label: "Static Pages Only",  description: "Include only URLs from sitemap-static.xml." },
-  { value: "dynamic", label: "Dynamic Pages",      description: "Include only URLs from sitemaps ending in -dpages.xml." },
+  {
+    value: "all",
+    label: "All Pages",
+    description:
+      "Scan every URL discovered in the sitemap (sitemap-static.xml + all -dpages.xml files).",
+  },
+  {
+    value: "static",
+    label: "Static Pages Only",
+    description: "Include only URLs from sitemap-static.xml.",
+  },
+  {
+    value: "dynamic",
+    label: "Dynamic Pages",
+    description: "Include only URLs from sitemaps ending in -dpages.xml.",
+  },
 ];
 
-const Wrap = styled.div` margin-bottom: 1.25rem; `;
+const Wrap = styled.div`
+  margin-bottom: 1.25rem;
+`;
 
 const Label = styled.label<{ $color: string }>`
   display: block;
@@ -42,7 +57,10 @@ const Select = styled.select<{ $border: string; $bg: string; $text: string }>`
   margin-bottom: 6px;
   font-family: inherit;
   transition: opacity 0.15s;
-  &:disabled { opacity: 0.55; cursor: not-allowed; }
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
 `;
 
 const Hint = styled.p<{ $color: string }>`
@@ -51,19 +69,27 @@ const Hint = styled.p<{ $color: string }>`
   margin: 0 0 12px;
 `;
 
-const DropdownWrap = styled.div` margin-top: 4px; `;
+const DropdownWrap = styled.div`
+  margin-top: 4px;
+`;
 
 export default function ScopeSelector({
-  scope, onScopeChange, disabled = false,
-  dynamicGroups = [], selectedGroups = [], onSelectedGroupsChange,
+  scope,
+  onScopeChange,
+  disabled = false,
+  dynamicGroups = [],
+  selectedGroups = [],
+  onSelectedGroupsChange,
 }: Props) {
   const { theme } = useTheme();
   const t = tokens[theme];
 
   return (
-    <Wrap>
+    <Wrap data-testid="scope-selector">
       <Label $color={t.text}>Scan Scope</Label>
       <Select
+        data-testid="scope-select"
+        className="scope-select"
         value={scope}
         onChange={(e) => onScopeChange(e.target.value as ScanScope)}
         disabled={disabled}
@@ -72,15 +98,17 @@ export default function ScopeSelector({
         $text={t.text}
       >
         {SCOPE_OPTIONS.map((o) => (
-          <option key={o.value} value={o.value}>{o.label}</option>
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
         ))}
       </Select>
-      <Hint $color={t.textMuted}>
+      <Hint data-testid="scope-hint" $color={t.textMuted}>
         {SCOPE_OPTIONS.find((o) => o.value === scope)?.description}
       </Hint>
 
       {scope === "dynamic" && dynamicGroups.length > 0 && (
-        <DropdownWrap>
+        <DropdownWrap data-testid="exclusion-dropdown-wrap">
           <ExclusionDropdown
             groups={dynamicGroups}
             selected={selectedGroups}

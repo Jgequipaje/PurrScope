@@ -14,7 +14,9 @@ type Props = {
 
 // ── Styled ────────────────────────────────────────────────────────────────────
 
-const Wrap = styled.div` margin-bottom: 1.5rem; `;
+const Wrap = styled.div`
+  margin-bottom: 1.5rem;
+`;
 
 const Header = styled.div`
   display: flex;
@@ -44,7 +46,9 @@ const ClearBtn = styled.button<{ $color: string }>`
   padding: 2px 4px;
   font-family: inherit;
   opacity: 0.8;
-  &:hover { opacity: 1; }
+  &:hover {
+    opacity: 1;
+  }
 `;
 
 const EmptyText = styled.p<{ $color: string }>`
@@ -79,9 +83,15 @@ const EntryBtn = styled.button<{ $border: string; $bg: string; $color: string }>
   gap: 8px;
   overflow: hidden;
   font-family: inherit;
-  transition: filter 0.12s, transform 0.1s;
-  &:hover { filter: brightness(0.96); }
-  &:active { transform: scale(0.99); }
+  transition:
+    filter 0.12s,
+    transform 0.1s;
+  &:hover {
+    filter: brightness(0.96);
+  }
+  &:active {
+    transform: scale(0.99);
+  }
 `;
 
 const Badge = styled.span<{ $bg: string; $color: string }>`
@@ -132,27 +142,31 @@ export default function RecentSearches({ entries, onSelect, onClear }: Props) {
   const t = tokens[theme];
 
   return (
-    <Wrap>
+    <Wrap data-testid="recent-searches">
       <Header>
         <SectionTitle $color={t.textMuted}>
           <RiTimeLine size={14} /> Recent Searches
         </SectionTitle>
         {entries.length > 0 && (
-          <ClearBtn onClick={onClear} $color={t.textFaint}>
+          <ClearBtn data-testid="clear-history-btn" onClick={onClear} $color={t.textFaint}>
             <RiDeleteBinLine size={13} /> Clear
           </ClearBtn>
         )}
       </Header>
 
       {entries.length === 0 && (
-        <EmptyText $color={t.textFaint}>No recent searches yet.</EmptyText>
+        <EmptyText data-testid="empty-history" $color={t.textFaint}>
+          No recent searches yet.
+        </EmptyText>
       )}
 
       {entries.length > 0 && (
-        <List>
+        <List data-testid="history-list">
           {entries.map((entry) => (
             <li key={entry.id}>
               <EntryBtn
+                data-testid={`history-entry-${entry.id}`}
+                className={`history-entry history-entry-${entry.type}`}
                 onClick={() => onSelect(entry)}
                 title={entry.value}
                 $border={t.border}
@@ -168,7 +182,8 @@ export default function RecentSearches({ entries, onSelect, onClear }: Props) {
                 </Badge>
                 <EntryLabel>{entryLabel(entry)}</EntryLabel>
                 <TimeStamp $color={t.textFaint}>
-                  <RiTimeLine size={11} />{relativeTime(entry.createdAt)}
+                  <RiTimeLine size={11} />
+                  {relativeTime(entry.createdAt)}
                 </TimeStamp>
               </EntryBtn>
             </li>
