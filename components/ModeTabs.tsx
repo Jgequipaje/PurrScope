@@ -25,9 +25,12 @@ const Wrap = styled.div`
 
 const Tab = styled.button<{
   $active: boolean;
-  $bg: string; $activeBg: string;
-  $color: string; $activeColor: string;
-  $border: string; $disabled: boolean;
+  $bg: string;
+  $activeBg: string;
+  $color: string;
+  $activeColor: string;
+  $border: string;
+  $disabled: boolean;
 }>`
   width: 100%;
   padding: 14px 16px;
@@ -42,9 +45,16 @@ const Tab = styled.button<{
   color: ${(p) => (p.$active ? p.$activeColor : p.$color)};
   font-family: inherit;
   opacity: ${(p) => (p.$disabled && !p.$active ? 0.45 : 1)};
-  transition: background 0.15s, opacity 0.15s, transform 0.1s;
-  &:not([disabled]):hover { opacity: 0.85; }
-  &:not([disabled]):active { transform: scale(0.97); }
+  transition:
+    background 0.15s,
+    opacity 0.15s,
+    transform 0.1s;
+  &:not([disabled]):hover {
+    opacity: 0.85;
+  }
+  &:not([disabled]):active {
+    transform: scale(0.97);
+  }
 
   @media (min-width: 480px) {
     width: auto;
@@ -58,10 +68,12 @@ export default function ModeTabs({ mode, onChange, disabled = false }: Props) {
   const t = tokens[theme];
 
   return (
-    <Wrap>
+    <Wrap data-testid="mode-tabs">
       {(Object.keys(LABELS) as Mode[]).map((m) => (
         <Tab
           key={m}
+          data-testid={`mode-tab-${m}`}
+          className={`mode-tab ${mode === m ? "active" : ""}`}
           onClick={() => !disabled && onChange(m)}
           $active={mode === m}
           $bg={t.btnIdle}

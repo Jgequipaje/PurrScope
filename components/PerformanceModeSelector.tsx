@@ -22,7 +22,9 @@ const MODES: PerformanceMode[] = ["safe", "balanced", "fast"];
 
 // ── Styled ────────────────────────────────────────────────────────────────────
 
-const Wrap = styled.div` margin-top: 10px; `;
+const Wrap = styled.div`
+  margin-top: 10px;
+`;
 
 const Label = styled.div<{ $color: string }>`
   font-size: 12px;
@@ -53,12 +55,16 @@ const ModeBtn = styled.button<{
   font-family: inherit;
   border: none;
   border-right: 1px solid ${(p) => p.$border};
-  background: ${(p) => p.$active ? p.$activeBg : p.$idleBg};
-  color: ${(p) => p.$active ? p.$activeTxt : p.$idleTxt};
-  cursor: ${(p) => p.$disabled ? "not-allowed" : "pointer"};
-  opacity: ${(p) => p.$disabled ? 0.55 : 1};
-  transition: background 0.12s, color 0.12s;
-  &:last-child { border-right: none; }
+  background: ${(p) => (p.$active ? p.$activeBg : p.$idleBg)};
+  color: ${(p) => (p.$active ? p.$activeTxt : p.$idleTxt)};
+  cursor: ${(p) => (p.$disabled ? "not-allowed" : "pointer")};
+  opacity: ${(p) => (p.$disabled ? 0.55 : 1)};
+  transition:
+    background 0.12s,
+    color 0.12s;
+  &:last-child {
+    border-right: none;
+  }
 `;
 
 const HelperText = styled.div<{ $color: string }>`
@@ -82,7 +88,9 @@ export default function PerformanceModeSelector({ value, onChange, disabled = fa
           <ModeBtn
             key={mode}
             type="button"
-            onClick={() => { if (!disabled) onChange(mode); }}
+            onClick={() => {
+              if (!disabled) onChange(mode);
+            }}
             $active={value === mode}
             $activeBg={t.btnActive}
             $activeTxt={t.btnActiveTxt}

@@ -15,7 +15,9 @@ export async function runScan(
   options: ScanRunOptions
 ): Promise<ScanRunResult> {
   switch (pipeline) {
-    case "previous": return runPreviousProcess(options);
-    case "improved": return runImprovedProcess(options);
+    case "previous":
+      return runPreviousProcess(options);
+    case "improved":
+      return runImprovedProcess(options);
   }
 }

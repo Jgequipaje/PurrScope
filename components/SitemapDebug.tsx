@@ -33,7 +33,9 @@ const StartScanBtn = styled.button<{ $disabled: boolean }>`
   opacity: ${(p) => (p.$disabled ? 0.65 : 1)};
   width: 100%;
   transition: opacity 0.15s;
-  &:not(:disabled):hover { opacity: 0.8; }
+  &:not(:disabled):hover {
+    opacity: 0.8;
+  }
 `;
 
 const CancelScanBtn = styled.button`
@@ -53,7 +55,9 @@ const CancelScanBtn = styled.button`
   gap: 5px;
   align-self: flex-start;
   transition: opacity 0.15s;
-  &:hover { opacity: 0.7; }
+  &:hover {
+    opacity: 0.7;
+  }
 `;
 
 type Props = {
@@ -75,46 +79,78 @@ type Props = {
   hasBenchmarkData: boolean;
 };
 
-export default function SitemapDebug({ crawl, filter, onScan, onScanImproved, onCancel, scanning, scanLimit, onScanLimitChange, maxScanLimit, pipelineUsed, performanceMode, onPerformanceModeChange, benchmarkRunMode, onBenchmarkRunModeChange, onResetBenchmark, hasBenchmarkData }: Props) {
+export default function SitemapDebug({
+  crawl,
+  filter,
+  onScan,
+  onScanImproved,
+  onCancel,
+  scanning,
+  scanLimit,
+  onScanLimitChange,
+  maxScanLimit,
+  pipelineUsed,
+  performanceMode,
+  onPerformanceModeChange,
+  benchmarkRunMode,
+  onBenchmarkRunModeChange,
+  onResetBenchmark,
+  hasBenchmarkData,
+}: Props) {
   const [sitemapsOpen, setSitemapsOpen] = useState(false);
   const { theme } = useTheme();
   const t = tokens[theme];
 
   // How many pages will actually be scanned given the current limit
-  const willScan = scanLimit !== "" && scanLimit > 0
-    ? Math.min(scanLimit, filter.totalAfterFiltering)
-    : filter.totalAfterFiltering;
+  const willScan =
+    scanLimit !== "" && scanLimit > 0
+      ? Math.min(scanLimit, filter.totalAfterFiltering)
+      : filter.totalAfterFiltering;
 
   return (
-    <div style={{
-      border: `1px solid ${t.infoBorder}`, borderRadius: 10,
-      marginBottom: "1.5rem", overflow: "hidden",
-      fontSize: 13, background: t.bg,
-      boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
-    }}>
-
+    <div
+      data-testid="sitemap-debug"
+      className="sitemap-debug"
+      style={{
+        border: `1px solid ${t.infoBorder}`,
+        borderRadius: 10,
+        marginBottom: "1.5rem",
+        overflow: "hidden",
+        fontSize: 13,
+        background: t.bg,
+        boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+      }}
+    >
       {/* ── Header ── */}
-      <div style={{
-        padding: "12px 16px", background: t.infoBg,
-        borderBottom: `1px solid ${t.infoBorder}`,
-      }}>
+      <div
+        style={{
+          padding: "12px 16px",
+          background: t.infoBg,
+          borderBottom: `1px solid ${t.infoBorder}`,
+        }}
+      >
         {/* Top row: title + scan buttons */}
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 10 }}>
           <span style={{ fontWeight: 700, fontSize: 14, color: t.infoText }}>
             Discovery Results
             {pipelineUsed && (
               <span style={{ fontWeight: 400, fontSize: 12, color: t.textMuted, marginLeft: 10 }}>
-                scanned via {pipelineUsed === "previous" ? "standard pipeline" : "optimized pipeline"}
+                scanned via{" "}
+                {pipelineUsed === "previous" ? "standard pipeline" : "optimized pipeline"}
               </span>
             )}
           </span>
           {scanning ? (
-            <CancelScanBtn onClick={onCancel}>
+            <CancelScanBtn data-testid="cancel-sitemap-scan-btn" onClick={onCancel}>
               <RiCloseLine size={14} /> Cancel Scan
             </CancelScanBtn>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 4 }}>
+            <div
+              style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 4 }}
+            >
               <StartScanBtn
+                data-testid="start-sitemap-scan-btn"
+                className="start-scan-btn"
                 onClick={onScanImproved}
                 disabled={willScan === 0}
                 $disabled={willScan === 0}
@@ -129,67 +165,114 @@ export default function SitemapDebug({ crawl, filter, onScan, onScanImproved, on
               />
               {/* Benchmark run mode + reset — hidden, set to true to re-enable */}
               {false && (
-              <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8, marginTop: 6 }}>
-                <span style={{ fontSize: 11, fontWeight: 600, color: t.textMuted, whiteSpace: "nowrap" }}>
-                  Run mode:
-                </span>
-                {(["cold", "warm"] as BenchmarkRunMode[]).map((m) => (
-                  <button
-                    key={m}
-                    type="button"
-                    onClick={() => { if (!scanning) onBenchmarkRunModeChange(m); }}
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    alignItems: "center",
+                    gap: 8,
+                    marginTop: 6,
+                  }}
+                >
+                  <span
                     style={{
-                      padding: "3px 10px", fontSize: 11, fontWeight: 600,
-                      borderRadius: 5, border: `1px solid ${t.border}`,
-                      background: benchmarkRunMode === m ? t.btnActive : t.btnIdle,
-                      color: benchmarkRunMode === m ? t.btnActiveTxt : t.btnIdleTxt,
-                      cursor: scanning ? "not-allowed" : "pointer",
-                      opacity: scanning ? 0.55 : 1,
-                      fontFamily: "inherit",
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: t.textMuted,
+                      whiteSpace: "nowrap",
                     }}
                   >
-                    {m === "cold" ? "Cold" : "Warm"}
-                  </button>
-                ))}
-                {hasBenchmarkData && (
-                  <button
-                    type="button"
-                    onClick={() => { if (!scanning) onResetBenchmark(); }}
-                    disabled={scanning}
-                    style={{
-                      padding: "3px 10px", fontSize: 11, fontWeight: 600,
-                      borderRadius: 5, border: `1px solid ${t.failText}`,
-                      background: "transparent", color: t.failText,
-                      cursor: scanning ? "not-allowed" : "pointer",
-                      opacity: scanning ? 0.55 : 1,
-                      fontFamily: "inherit",
-                    }}
-                  >
-                    Reset Benchmark
-                  </button>
-                )}
-              </div>
+                    Run mode:
+                  </span>
+                  {(["cold", "warm"] as BenchmarkRunMode[]).map((m) => (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() => {
+                        if (!scanning) onBenchmarkRunModeChange(m);
+                      }}
+                      style={{
+                        padding: "3px 10px",
+                        fontSize: 11,
+                        fontWeight: 600,
+                        borderRadius: 5,
+                        border: `1px solid ${t.border}`,
+                        background: benchmarkRunMode === m ? t.btnActive : t.btnIdle,
+                        color: benchmarkRunMode === m ? t.btnActiveTxt : t.btnIdleTxt,
+                        cursor: scanning ? "not-allowed" : "pointer",
+                        opacity: scanning ? 0.55 : 1,
+                        fontFamily: "inherit",
+                      }}
+                    >
+                      {m === "cold" ? "Cold" : "Warm"}
+                    </button>
+                  ))}
+                  {hasBenchmarkData && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!scanning) onResetBenchmark();
+                      }}
+                      disabled={scanning}
+                      style={{
+                        padding: "3px 10px",
+                        fontSize: 11,
+                        fontWeight: 600,
+                        borderRadius: 5,
+                        border: `1px solid ${t.failText}`,
+                        background: "transparent",
+                        color: t.failText,
+                        cursor: scanning ? "not-allowed" : "pointer",
+                        opacity: scanning ? 0.55 : 1,
+                        fontFamily: "inherit",
+                      }}
+                    >
+                      Reset Benchmark
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           )}
         </div>
 
         {/* Debug counts row */}
-        <div style={{
-          display: "grid", gridTemplateColumns: "repeat(3, 1fr)",
-          gap: 8, marginBottom: 12,
-        }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: 8,
+            marginBottom: 12,
+          }}
+        >
           {[
             { label: "URLs Discovered", value: crawl.pageCount, color: t.infoText },
-            { label: "Pages Selected for Scan", value: filter.totalAfterFiltering, color: t.passText },
-            { label: "Ready to Scan",  value: willScan, color: t.link },
+            {
+              label: "Pages Selected for Scan",
+              value: filter.totalAfterFiltering,
+              color: t.passText,
+            },
+            { label: "Ready to Scan", value: willScan, color: t.link },
           ].map(({ label, value, color }) => (
-            <div key={label} style={{
-              background: t.bg, borderRadius: 6, padding: "8px 12px",
-              border: `1px solid ${t.infoBorder}`, textAlign: "center",
-            }}>
+            <div
+              key={label}
+              style={{
+                background: t.bg,
+                borderRadius: 6,
+                padding: "8px 12px",
+                border: `1px solid ${t.infoBorder}`,
+                textAlign: "center",
+              }}
+            >
               <div style={{ fontSize: 22, fontWeight: 700, color }}>{value}</div>
-              <div style={{ fontSize: 11, color: t.textMuted, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+              <div
+                style={{
+                  fontSize: 11,
+                  color: t.textMuted,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.04em",
+                }}
+              >
                 {label}
               </div>
             </div>
@@ -202,6 +285,8 @@ export default function SitemapDebug({ crawl, filter, onScan, onScanImproved, on
             Scan limit:
           </label>
           <input
+            data-testid="scan-limit-input"
+            className="scan-limit-input"
             type="number"
             min={1}
             max={maxScanLimit}
@@ -210,26 +295,37 @@ export default function SitemapDebug({ crawl, filter, onScan, onScanImproved, on
             disabled={scanning || maxScanLimit === 0}
             onChange={(e) => {
               const v = e.target.value;
-              if (v === "") { onScanLimitChange(""); return; }
+              if (v === "") {
+                onScanLimitChange("");
+                return;
+              }
               const parsed = parseInt(v, 10);
               if (isNaN(parsed)) return;
               onScanLimitChange(Math.min(Math.max(1, parsed), maxScanLimit));
             }}
             style={{
-              width: 140, padding: "4px 8px", fontSize: 13,
-              border: `1px solid ${t.infoBorder}`, borderRadius: 6,
-              background: t.bg, color: t.text,
-              opacity: (scanning || maxScanLimit === 0) ? 0.55 : 1,
-              cursor: (scanning || maxScanLimit === 0) ? "not-allowed" : "text",
+              width: 140,
+              padding: "4px 8px",
+              fontSize: 13,
+              border: `1px solid ${t.infoBorder}`,
+              borderRadius: 6,
+              background: t.bg,
+              color: t.text,
+              opacity: scanning || maxScanLimit === 0 ? 0.55 : 1,
+              cursor: scanning || maxScanLimit === 0 ? "not-allowed" : "text",
             }}
           />
           {scanLimit !== "" && (
             <button
+              data-testid="clear-scan-limit-btn"
               onClick={() => onScanLimitChange("")}
               disabled={scanning}
               style={{
-                fontSize: 12, color: t.textMuted, background: "none",
-                border: "none", cursor: scanning ? "not-allowed" : "pointer",
+                fontSize: 12,
+                color: t.textMuted,
+                background: "none",
+                border: "none",
+                cursor: scanning ? "not-allowed" : "pointer",
                 textDecoration: "underline",
                 opacity: scanning ? 0.45 : 1,
                 fontFamily: "inherit",
@@ -257,10 +353,16 @@ export default function SitemapDebug({ crawl, filter, onScan, onScanImproved, on
         <button
           onClick={() => setSitemapsOpen((v) => !v)}
           style={{
-            width: "100%", display: "flex", justifyContent: "space-between",
-            alignItems: "center", padding: "9px 16px",
-            background: t.bgSubtle, border: "none", cursor: "pointer",
-            fontWeight: 600, color: t.text,
+            width: "100%",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: "9px 16px",
+            background: t.bgSubtle,
+            border: "none",
+            cursor: "pointer",
+            fontWeight: 600,
+            color: t.text,
             borderBottom: sitemapsOpen ? `1px solid ${t.border}` : "none",
             fontFamily: "inherit",
           }}
@@ -272,11 +374,22 @@ export default function SitemapDebug({ crawl, filter, onScan, onScanImproved, on
         </button>
 
         {sitemapsOpen && (
-          <ul style={{ margin: 0, padding: "10px 16px 10px 2.2rem", lineHeight: 1.9, background: t.bg }}>
+          <ul
+            style={{
+              margin: 0,
+              padding: "10px 16px 10px 2.2rem",
+              lineHeight: 1.9,
+              background: t.bg,
+            }}
+          >
             {crawl.sitemapUrls.map((u) => (
               <li key={u}>
-                <a href={u} target="_blank" rel="noreferrer"
-                  style={{ color: t.link, wordBreak: "break-all", textDecoration: "none" }}>
+                <a
+                  href={u}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ color: t.link, wordBreak: "break-all", textDecoration: "none" }}
+                >
                   {u}
                 </a>
               </li>

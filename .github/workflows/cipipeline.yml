@@ -1,0 +1,74 @@
+name: CI Pipeline
+on:
+  push:
+    branches: [main, develop, "fix/**", "chore/**"]
+  pull_request:
+    branches: [main, develop]
+jobs:
+  format:
+    name: Check Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Checkout
+        uses: actions/checkout@v6
+
+      - name: Run Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: "npm"
+
+      - name: Run Setup Dependencies
+        run: npm ci
+
+      - name: Run Check Formatting
+        run: npm run format:check
+
+  smoke-tests:
+    needs: [format]
+    name: Run Playwright Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Checkout
+        uses: actions/checkout@v6
+
+      - name: Run Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: "npm"
+
+      - name: Run Setup Dependencies
+        run: npm ci
+
+      - name: Run Build
+        run: npm run build
+
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "version=$(npm list @playwright/test --depth=0 --json | jq -r '.dependencies["@playwright/test"].version')" >> $GITHUB_OUTPUT
+
+      - uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+
+      - name: Install Playwright Browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps
+
+      - name: Install System Deps (if cache hit)
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps
+
+      - name: Run Playwright Tests
+        run: npx playwright test --grep "@Smoke"
+
+      - name: Upload Playwright Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30

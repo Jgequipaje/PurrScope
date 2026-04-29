@@ -54,7 +54,9 @@ const ResetBtn = styled.button<{ $border: string; $color: string }>`
   color: ${(p) => p.$color};
   cursor: pointer;
   font-family: inherit;
-  &:hover { opacity: 0.8; }
+  &:hover {
+    opacity: 0.8;
+  }
 `;
 
 const WarningBanner = styled.div<{ $bg: string; $border: string; $color: string }>`
@@ -68,7 +70,10 @@ const WarningBanner = styled.div<{ $bg: string; $border: string; $color: string 
   gap: 6px;
 `;
 
-const Table = styled.table` width: 100%; border-collapse: collapse; `;
+const Table = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+`;
 
 const Th = styled.th<{ $bg: string; $border: string; $color: string; $align?: string }>`
   padding: 9px 14px;
@@ -83,7 +88,13 @@ const Th = styled.th<{ $bg: string; $border: string; $color: string; $align?: st
   white-space: nowrap;
 `;
 
-const Td = styled.td<{ $border: string; $color: string; $align?: string; $highlight?: boolean; $highlightBg?: string }>`
+const Td = styled.td<{
+  $border: string;
+  $color: string;
+  $align?: string;
+  $highlight?: boolean;
+  $highlightBg?: string;
+}>`
   padding: 9px 14px;
   border-bottom: 1px solid ${(p) => p.$border};
   color: ${(p) => p.$color};
@@ -177,8 +188,12 @@ const NoteItem = styled.div<{ $color: string }>`
   font-size: 12px;
   color: ${(p) => p.$color};
   margin-bottom: 3px;
-  &:last-child { margin-bottom: 0; }
-  &::before { content: "ℹ "; }
+  &:last-child {
+    margin-bottom: 0;
+  }
+  &::before {
+    content: "ℹ ";
+  }
 `;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -192,14 +207,32 @@ function winnerBadge(aVal: number, bVal: number, lowerIsBetter: boolean, t: Toke
   if (aVal === bVal) return null;
   const aWins = lowerIsBetter ? aVal < bVal : aVal > bVal;
   return aWins
-    ? { a: <Badge $bg={t.passBg} $color={t.passText}>faster</Badge>, b: null }
-    : { a: null, b: <Badge $bg={t.passBg} $color={t.passText}>faster</Badge> };
+    ? {
+        a: (
+          <Badge $bg={t.passBg} $color={t.passText}>
+            faster
+          </Badge>
+        ),
+        b: null,
+      }
+    : {
+        a: null,
+        b: (
+          <Badge $bg={t.passBg} $color={t.passText}>
+            faster
+          </Badge>
+        ),
+      };
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function BenchmarkComparisonTable({
-  previous, improved, previousResults, improvedResults, onReset,
+  previous,
+  improved,
+  previousResults,
+  improvedResults,
+  onReset,
 }: Props) {
   const { theme } = useTheme();
   const t = tokens[theme];
@@ -212,9 +245,10 @@ export default function BenchmarkComparisonTable({
 
   const fair = hasBoth ? isFairComparison(previous!, improved!) : true;
 
-  const consistency = hasBoth && previousResults && improvedResults
-    ? compareResults(previousResults, improvedResults)
-    : null;
+  const consistency =
+    hasBoth && previousResults && improvedResults
+      ? compareResults(previousResults, improvedResults)
+      : null;
 
   const durationWinner = hasBoth
     ? winnerBadge(previous!.totalDurationMs, improved!.totalDurationMs, true, t)
@@ -227,35 +261,66 @@ export default function BenchmarkComparisonTable({
   const notes: string[] = [];
   if (improved) {
     const modeLabel = improved.performanceMode ?? "balanced";
-    notes.push(`Improved Process ran in ${modeLabel} mode · ${improved.concurrency ?? 1} worker${(improved.concurrency ?? 1) > 1 ? "s" : ""} · cache: ${improved.cacheMode}.`);
+    notes.push(
+      `Improved Process ran in ${modeLabel} mode · ${improved.concurrency ?? 1} worker${(improved.concurrency ?? 1) > 1 ? "s" : ""} · cache: ${improved.cacheMode}.`
+    );
     if (improved.playwrightCount > improved.urlsScanned * 0.5)
-      notes.push("Improved Process had heavy Playwright fallback — may be slower on lower-end PCs.");
+      notes.push(
+        "Improved Process had heavy Playwright fallback — may be slower on lower-end PCs."
+      );
   }
-  if (previous)
-    notes.push(`Previous Process · sequential · cache: ${previous.cacheMode}.`);
+  if (previous) notes.push(`Previous Process · sequential · cache: ${previous.cacheMode}.`);
   if (hasBoth && previous!.runMode !== improved!.runMode)
     notes.push("Run modes differ — cold vs warm cache — timing comparison may not be fair.");
   if (hasBoth && previous!.playwrightCount < improved!.playwrightCount)
-    notes.push("Previous Process had fewer Playwright fallbacks — may be more stable on blocked pages.");
+    notes.push(
+      "Previous Process had fewer Playwright fallbacks — may be more stable on blocked pages."
+    );
   if (hasBoth && consistency && consistency.matchRate < 0.9)
-    notes.push(`Result consistency is ${Math.round(consistency.matchRate * 100)}% — pipelines disagree on some pages.`);
+    notes.push(
+      `Result consistency is ${Math.round(consistency.matchRate * 100)}% — pipelines disagree on some pages.`
+    );
 
   type Row = { label: string; prev: string | number; impr: string | number };
 
   const timingRows: Row[] = [
-    { label: "Total Duration",  prev: previous ? fmtDuration(previous.totalDurationMs) : "—",  impr: improved ? fmtDuration(improved.totalDurationMs) : "—" },
-    { label: "Avg Time / Page", prev: previous ? fmtDuration(previous.avgTimePerPageMs) : "—", impr: improved ? fmtDuration(improved.avgTimePerPageMs) : "—" },
+    {
+      label: "Total Duration",
+      prev: previous ? fmtDuration(previous.totalDurationMs) : "—",
+      impr: improved ? fmtDuration(improved.totalDurationMs) : "—",
+    },
+    {
+      label: "Avg Time / Page",
+      prev: previous ? fmtDuration(previous.avgTimePerPageMs) : "—",
+      impr: improved ? fmtDuration(improved.avgTimePerPageMs) : "—",
+    },
   ];
 
   const countRows: Row[] = [
-    { label: "URLs Queued",         prev: previous?.urlsQueued ?? "—",      impr: improved?.urlsQueued ?? "—" },
-    { label: "URLs Scanned",        prev: previous?.urlsScanned ?? "—",     impr: improved?.urlsScanned ?? "—" },
-    { label: "Successful",          prev: previous?.successCount ?? "—",    impr: improved?.successCount ?? "—" },
-    { label: "Failed SEO",          prev: previous?.failedCount ?? "—",     impr: improved?.failedCount ?? "—" },
-    { label: "Blocked Pages",       prev: previous?.blockedCount ?? "—",    impr: improved?.blockedCount ?? "—" },
-    { label: "Errors",              prev: previous?.errorCount ?? "—",      impr: improved?.errorCount ?? "—" },
-    { label: "Fetch Only",          prev: previous?.fetchCount ?? "—",      impr: improved?.fetchCount ?? "—" },
-    { label: "Playwright Fallback", prev: previous?.playwrightCount ?? "—", impr: improved?.playwrightCount ?? "—" },
+    { label: "URLs Queued", prev: previous?.urlsQueued ?? "—", impr: improved?.urlsQueued ?? "—" },
+    {
+      label: "URLs Scanned",
+      prev: previous?.urlsScanned ?? "—",
+      impr: improved?.urlsScanned ?? "—",
+    },
+    {
+      label: "Successful",
+      prev: previous?.successCount ?? "—",
+      impr: improved?.successCount ?? "—",
+    },
+    { label: "Failed SEO", prev: previous?.failedCount ?? "—", impr: improved?.failedCount ?? "—" },
+    {
+      label: "Blocked Pages",
+      prev: previous?.blockedCount ?? "—",
+      impr: improved?.blockedCount ?? "—",
+    },
+    { label: "Errors", prev: previous?.errorCount ?? "—", impr: improved?.errorCount ?? "—" },
+    { label: "Fetch Only", prev: previous?.fetchCount ?? "—", impr: improved?.fetchCount ?? "—" },
+    {
+      label: "Playwright Fallback",
+      prev: previous?.playwrightCount ?? "—",
+      impr: improved?.playwrightCount ?? "—",
+    },
   ];
 
   return (
@@ -264,10 +329,7 @@ export default function BenchmarkComparisonTable({
         <Title $color={t.text}>
           Pipeline Benchmark Comparison
           {hasBoth && (
-            <Badge
-              $bg={fair ? t.passBg : t.warnBg}
-              $color={fair ? t.passText : t.warnText}
-            >
+            <Badge $bg={fair ? t.passBg : t.warnBg} $color={fair ? t.passText : t.warnText}>
               {fair ? "fair comparison" : "⚠ conditions differ"}
             </Badge>
           )}
@@ -287,7 +349,8 @@ export default function BenchmarkComparisonTable({
       {/* Fairness warning */}
       {hasBoth && !fair && (
         <WarningBanner $bg={t.warnBg} $border={t.border} $color={t.warnText}>
-          ⚠ Warning: {previous!.runMode !== improved!.runMode
+          ⚠ Warning:{" "}
+          {previous!.runMode !== improved!.runMode
             ? `Previous ran as ${previous!.runMode} cache, Improved ran as ${improved!.runMode} cache — timing is not directly comparable.`
             : "Scan configurations differ between runs — results may not be directly comparable."}
         </WarningBanner>
@@ -296,11 +359,21 @@ export default function BenchmarkComparisonTable({
       <Table>
         <thead>
           <tr>
-            <Th $bg={t.headerBg} $border={t.border} $color={t.textMuted} style={{ width: "34%" }}>Metric</Th>
+            <Th $bg={t.headerBg} $border={t.border} $color={t.textMuted} style={{ width: "34%" }}>
+              Metric
+            </Th>
             <Th $bg={t.headerBg} $border={t.border} $color={t.textMuted} $align="center">
               Previous Process
               {previous && (
-                <div style={{ fontWeight: 400, fontSize: 11, color: t.textFaint, textTransform: "none", letterSpacing: 0 }}>
+                <div
+                  style={{
+                    fontWeight: 400,
+                    fontSize: 11,
+                    color: t.textFaint,
+                    textTransform: "none",
+                    letterSpacing: 0,
+                  }}
+                >
                   {previous.runMode} · {new Date(previous.ranAt).toLocaleTimeString()}
                 </div>
               )}
@@ -308,7 +381,15 @@ export default function BenchmarkComparisonTable({
             <Th $bg={t.headerBg} $border={t.border} $color={t.textMuted} $align="center">
               Improved Process
               {improved && (
-                <div style={{ fontWeight: 400, fontSize: 11, color: t.textFaint, textTransform: "none", letterSpacing: 0 }}>
+                <div
+                  style={{
+                    fontWeight: 400,
+                    fontSize: 11,
+                    color: t.textFaint,
+                    textTransform: "none",
+                    letterSpacing: 0,
+                  }}
+                >
                   {improved.runMode} · {new Date(improved.ranAt).toLocaleTimeString()}
                 </div>
               )}
@@ -317,47 +398,97 @@ export default function BenchmarkComparisonTable({
         </thead>
         <tbody>
           <SectionHeader $bg={t.bgMuted}>
-            <SectionTd colSpan={3} $color={t.textMuted} $border={t.border}>Timing</SectionTd>
+            <SectionTd colSpan={3} $color={t.textMuted} $border={t.border}>
+              Timing
+            </SectionTd>
           </SectionHeader>
           {timingRows.map((row) => {
             const winner = row.label === "Total Duration" ? durationWinner : avgWinner;
             return (
               <tr key={row.label}>
-                <MetricLabel $border={t.border} $color={t.text} $bg={t.bgSubtle}>{row.label}</MetricLabel>
-                <Td $border={t.border} $color={t.text} $align="center">{previous ? row.prev : "—"}{winner?.a}</Td>
-                <Td $border={t.border} $color={t.text} $align="center">{improved ? row.impr : "—"}{winner?.b}</Td>
+                <MetricLabel $border={t.border} $color={t.text} $bg={t.bgSubtle}>
+                  {row.label}
+                </MetricLabel>
+                <Td $border={t.border} $color={t.text} $align="center">
+                  {previous ? row.prev : "—"}
+                  {winner?.a}
+                </Td>
+                <Td $border={t.border} $color={t.text} $align="center">
+                  {improved ? row.impr : "—"}
+                  {winner?.b}
+                </Td>
               </tr>
             );
           })}
 
           <SectionHeader $bg={t.bgMuted}>
-            <SectionTd colSpan={3} $color={t.textMuted} $border={t.border}>Result Counts</SectionTd>
+            <SectionTd colSpan={3} $color={t.textMuted} $border={t.border}>
+              Result Counts
+            </SectionTd>
           </SectionHeader>
           {countRows.map((row) => (
             <tr key={row.label}>
-              <MetricLabel $border={t.border} $color={t.text} $bg={t.bgSubtle}>{row.label}</MetricLabel>
-              <Td $border={t.border} $color={t.text} $align="center">{previous ? row.prev : "—"}</Td>
-              <Td $border={t.border} $color={t.text} $align="center">{improved ? row.impr : "—"}</Td>
+              <MetricLabel $border={t.border} $color={t.text} $bg={t.bgSubtle}>
+                {row.label}
+              </MetricLabel>
+              <Td $border={t.border} $color={t.text} $align="center">
+                {previous ? row.prev : "—"}
+              </Td>
+              <Td $border={t.border} $color={t.text} $align="center">
+                {improved ? row.impr : "—"}
+              </Td>
             </tr>
           ))}
 
           <SectionHeader $bg={t.bgMuted}>
-            <SectionTd colSpan={3} $color={t.textMuted} $border={t.border}>Environment</SectionTd>
+            <SectionTd colSpan={3} $color={t.textMuted} $border={t.border}>
+              Environment
+            </SectionTd>
           </SectionHeader>
           {[
-            { label: "Run Mode",         prev: previous?.runMode ?? "—",                                    impr: improved?.runMode ?? "—" },
-            { label: "Cache Mode",       prev: previous?.cacheMode ?? "—",                                  impr: improved?.cacheMode ?? "—" },
-            { label: "Scope",            prev: previous?.scanScope ?? "—",                                  impr: improved?.scanScope ?? "—" },
-            { label: "Scan Limit",       prev: previous ? (previous.scanLimit ?? "none") : "—",             impr: improved ? (improved.scanLimit ?? "none") : "—" },
-            { label: "Queue Size",       prev: previous?.queueSize ?? "—",                                  impr: improved?.queueSize ?? "—" },
-            { label: "Concurrency",      prev: previous ? (previous.concurrency ?? "sequential") : "—",     impr: improved ? (improved.concurrency ?? "sequential") : "—" },
-            { label: "Performance Mode", prev: previous ? (previous.performanceMode ?? "—") : "—",          impr: improved?.performanceMode ?? "—" },
-            { label: "Browser Reuse",    prev: previous ? (previous.browserReuse ? "Yes" : "No") : "—",     impr: improved ? (improved.browserReuse ? "Yes" : "No") : "—" },
+            { label: "Run Mode", prev: previous?.runMode ?? "—", impr: improved?.runMode ?? "—" },
+            {
+              label: "Cache Mode",
+              prev: previous?.cacheMode ?? "—",
+              impr: improved?.cacheMode ?? "—",
+            },
+            { label: "Scope", prev: previous?.scanScope ?? "—", impr: improved?.scanScope ?? "—" },
+            {
+              label: "Scan Limit",
+              prev: previous ? (previous.scanLimit ?? "none") : "—",
+              impr: improved ? (improved.scanLimit ?? "none") : "—",
+            },
+            {
+              label: "Queue Size",
+              prev: previous?.queueSize ?? "—",
+              impr: improved?.queueSize ?? "—",
+            },
+            {
+              label: "Concurrency",
+              prev: previous ? (previous.concurrency ?? "sequential") : "—",
+              impr: improved ? (improved.concurrency ?? "sequential") : "—",
+            },
+            {
+              label: "Performance Mode",
+              prev: previous ? (previous.performanceMode ?? "—") : "—",
+              impr: improved?.performanceMode ?? "—",
+            },
+            {
+              label: "Browser Reuse",
+              prev: previous ? (previous.browserReuse ? "Yes" : "No") : "—",
+              impr: improved ? (improved.browserReuse ? "Yes" : "No") : "—",
+            },
           ].map((row) => (
             <tr key={row.label}>
-              <MetricLabel $border={t.border} $color={t.text} $bg={t.bgSubtle}>{row.label}</MetricLabel>
-              <Td $border={t.border} $color={t.text} $align="center">{row.prev}</Td>
-              <Td $border={t.border} $color={t.text} $align="center">{row.impr}</Td>
+              <MetricLabel $border={t.border} $color={t.text} $bg={t.bgSubtle}>
+                {row.label}
+              </MetricLabel>
+              <Td $border={t.border} $color={t.text} $align="center">
+                {row.prev}
+              </Td>
+              <Td $border={t.border} $color={t.text} $align="center">
+                {row.impr}
+              </Td>
             </tr>
           ))}
         </tbody>
@@ -368,30 +499,64 @@ export default function BenchmarkComparisonTable({
           <ConsistencyTitle $color={t.text}>
             Result Consistency — {consistency.totalCompared} URLs compared
             <Badge
-              $bg={consistency.matchRate >= 0.95 ? t.passBg : consistency.matchRate >= 0.8 ? t.warnBg : t.failBg}
-              $color={consistency.matchRate >= 0.95 ? t.passText : consistency.matchRate >= 0.8 ? t.warnText : t.failText}
+              $bg={
+                consistency.matchRate >= 0.95
+                  ? t.passBg
+                  : consistency.matchRate >= 0.8
+                    ? t.warnBg
+                    : t.failBg
+              }
+              $color={
+                consistency.matchRate >= 0.95
+                  ? t.passText
+                  : consistency.matchRate >= 0.8
+                    ? t.warnText
+                    : t.failText
+              }
             >
               {Math.round(consistency.matchRate * 100)}% match
             </Badge>
           </ConsistencyTitle>
           <ConsistencyGrid>
             {[
-              { label: "Title",       match: consistency.titleMatch,       mismatch: consistency.titleMismatch },
-              { label: "Description", match: consistency.descriptionMatch, mismatch: consistency.descriptionMismatch },
-              { label: "Status",      match: consistency.statusMatch,      mismatch: consistency.statusMismatch },
-              { label: "Overall",
-                match: consistency.titleMatch + consistency.descriptionMatch + consistency.statusMatch,
-                mismatch: consistency.titleMismatch + consistency.descriptionMismatch + consistency.statusMismatch },
+              {
+                label: "Title",
+                match: consistency.titleMatch,
+                mismatch: consistency.titleMismatch,
+              },
+              {
+                label: "Description",
+                match: consistency.descriptionMatch,
+                mismatch: consistency.descriptionMismatch,
+              },
+              {
+                label: "Status",
+                match: consistency.statusMatch,
+                mismatch: consistency.statusMismatch,
+              },
+              {
+                label: "Overall",
+                match:
+                  consistency.titleMatch + consistency.descriptionMatch + consistency.statusMatch,
+                mismatch:
+                  consistency.titleMismatch +
+                  consistency.descriptionMismatch +
+                  consistency.statusMismatch,
+              },
             ].map(({ label, match, mismatch }) => {
               const total = match + mismatch;
               const rate = total > 0 ? match / total : 0;
               return (
                 <ConsistencyCell key={label} $border={t.border} $bg={t.bg}>
-                  <ConsistencyValue $color={rate >= 0.9 ? t.passText : rate >= 0.7 ? t.warnText : t.failText}>
+                  <ConsistencyValue
+                    $color={rate >= 0.9 ? t.passText : rate >= 0.7 ? t.warnText : t.failText}
+                  >
                     {pct(match, total)}
                   </ConsistencyValue>
                   <ConsistencyLabel $color={t.textMuted}>{label}</ConsistencyLabel>
-                  <div style={{ fontSize: 11, color: t.textFaint, marginTop: 2 }}>{match}/{total}</div>
+                  <div style={{ fontSize: 11, color: t.textFaint, marginTop: 2 }}>
+                    {match}/{total}
+                  </div>
                 </ConsistencyCell>
               );
             })}
@@ -401,7 +566,11 @@ export default function BenchmarkComparisonTable({
 
       {notes.length > 0 && (
         <NotesWrap $border={t.border} $bg={t.bg}>
-          {notes.map((n, i) => <NoteItem key={i} $color={t.textMuted}>{n}</NoteItem>)}
+          {notes.map((n, i) => (
+            <NoteItem key={i} $color={t.textMuted}>
+              {n}
+            </NoteItem>
+          ))}
         </NotesWrap>
       )}
     </Wrap>

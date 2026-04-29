@@ -3,11 +3,19 @@
 import { useState, useMemo, Fragment } from "react";
 import styled, { keyframes, css } from "styled-components";
 import {
-  RiCheckboxCircleFill, RiCloseCircleFill, RiProhibitedLine,
-  RiAlertLine, RiCornerDownRightLine,
-  RiArrowDownSLine, RiArrowUpSLine,
-  RiFileCopyLine, RiCheckLine, RiErrorWarningLine,
-  RiSearchLine, RiArrowLeftSLine, RiArrowRightSLine,
+  RiCheckboxCircleFill,
+  RiCloseCircleFill,
+  RiProhibitedLine,
+  RiAlertLine,
+  RiCornerDownRightLine,
+  RiArrowDownSLine,
+  RiArrowUpSLine,
+  RiFileCopyLine,
+  RiCheckLine,
+  RiErrorWarningLine,
+  RiSearchLine,
+  RiArrowLeftSLine,
+  RiArrowRightSLine,
 } from "react-icons/ri";
 import { buildCopyText } from "@/lib/copy";
 import { useTheme, tokens } from "@/lib/theme";
@@ -18,7 +26,7 @@ import type { ScanResult } from "@/lib/types";
 
 type TabFilter = "all" | "failed" | "passed" | "blocked";
 const PAGE_SIZE_OPTIONS = [25, 50, 100] as const;
-type PageSize = typeof PAGE_SIZE_OPTIONS[number];
+type PageSize = (typeof PAGE_SIZE_OPTIONS)[number];
 const PAGINATION_THRESHOLD = 25;
 
 type Props = {
@@ -40,7 +48,7 @@ const TableWrap = styled.div<{ $border: string; $bg: string }>`
   border-radius: 10px;
   overflow: hidden;
   background: ${(p) => p.$bg};
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
   margin-bottom: 1.5rem;
 `;
 
@@ -81,19 +89,31 @@ const TabGroup = styled.div`
   flex-wrap: wrap;
 `;
 
-const TabBtn = styled.button<{ $active: boolean; $activeBg: string; $idleBg: string; $activeTxt: string; $idleTxt: string; $border: string; $disabled?: boolean }>`
+const TabBtn = styled.button<{
+  $active: boolean;
+  $activeBg: string;
+  $idleBg: string;
+  $activeTxt: string;
+  $idleTxt: string;
+  $border: string;
+  $disabled?: boolean;
+}>`
   padding: 4px 11px;
   font-size: 12px;
   font-weight: 600;
   border-radius: 6px;
   border: 1px solid ${(p) => p.$border};
-  cursor: ${(p) => p.$disabled ? "not-allowed" : "pointer"};
-  opacity: ${(p) => p.$disabled ? 0.4 : 1};
+  cursor: ${(p) => (p.$disabled ? "not-allowed" : "pointer")};
+  opacity: ${(p) => (p.$disabled ? 0.4 : 1)};
   background: ${(p) => (p.$active && !p.$disabled ? p.$activeBg : p.$idleBg)};
   color: ${(p) => (p.$active && !p.$disabled ? p.$activeTxt : p.$idleTxt)};
   font-family: inherit;
-  transition: background 0.15s, opacity 0.15s;
-  &:not(:disabled):hover { opacity: 0.85; }
+  transition:
+    background 0.15s,
+    opacity 0.15s;
+  &:not(:disabled):hover {
+    opacity: 0.85;
+  }
 `;
 
 const ToolbarRight = styled.div`
@@ -120,10 +140,19 @@ const SearchInput = styled.input<{ $color: string; $bg: string }>`
   color: ${(p) => p.$color};
   font-family: inherit;
   width: 160px;
-  &::placeholder { opacity: 0.5; }
+  &::placeholder {
+    opacity: 0.5;
+  }
 `;
 
-const CopyBtn = styled.button<{ $copied: boolean; $passBg: string; $idleBg: string; $passTxt: string; $idleTxt: string; $border: string }>`
+const CopyBtn = styled.button<{
+  $copied: boolean;
+  $passBg: string;
+  $idleBg: string;
+  $passTxt: string;
+  $idleTxt: string;
+  $border: string;
+}>`
   padding: 4px 12px;
   font-size: 12px;
   font-weight: 600;
@@ -133,13 +162,22 @@ const CopyBtn = styled.button<{ $copied: boolean; $passBg: string; $idleBg: stri
   border-radius: 6px;
   cursor: pointer;
   font-family: inherit;
-  transition: background 0.15s, opacity 0.15s;
-  &:hover { opacity: 0.85; }
+  transition:
+    background 0.15s,
+    opacity 0.15s;
+  &:hover {
+    opacity: 0.85;
+  }
 `;
 
-const ScrollWrap = styled.div` overflow-x: auto; `;
+const ScrollWrap = styled.div`
+  overflow-x: auto;
+`;
 
-const Table = styled.table` width: 100%; border-collapse: collapse; `;
+const Table = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+`;
 
 const Thead = styled.thead`
   position: sticky;
@@ -147,7 +185,13 @@ const Thead = styled.thead`
   z-index: 2;
 `;
 
-const Th = styled.th<{ $bg: string; $border: string; $color: string; $align?: string; $sortable?: boolean }>`
+const Th = styled.th<{
+  $bg: string;
+  $border: string;
+  $color: string;
+  $align?: string;
+  $sortable?: boolean;
+}>`
   padding: 10px 14px;
   font-size: 11px;
   font-weight: 600;
@@ -158,9 +202,15 @@ const Th = styled.th<{ $bg: string; $border: string; $color: string; $align?: st
   border-bottom: 1px solid ${(p) => p.$border};
   white-space: nowrap;
   text-align: ${(p) => p.$align ?? "left"};
-  cursor: ${(p) => p.$sortable ? "pointer" : "default"};
+  cursor: ${(p) => (p.$sortable ? "pointer" : "default")};
   user-select: none;
-  ${(p) => p.$sortable && css`&:hover { opacity: 0.8; }`}
+  ${(p) =>
+    p.$sortable &&
+    css`
+      &:hover {
+        opacity: 0.8;
+      }
+    `}
 `;
 
 const Td = styled.td<{ $border: string; $color: string; $align?: string }>`
@@ -172,14 +222,22 @@ const Td = styled.td<{ $border: string; $color: string; $align?: string }>`
   text-align: ${(p) => p.$align ?? "left"};
 `;
 
-const DataRow = styled.tr<{ $bg: string; $open: boolean; $accentColor: string; $failed: boolean; $failBorder: string }>`
+const DataRow = styled.tr<{
+  $bg: string;
+  $open: boolean;
+  $accentColor: string;
+  $failed: boolean;
+  $failBorder: string;
+}>`
   background: ${(p) => p.$bg};
   cursor: pointer;
-  border-left: 3px solid ${(p) => p.$failed ? p.$failBorder : "transparent"};
-  box-shadow: ${(p) => p.$open ? `inset 3px 0 0 ${p.$accentColor}` : "none"};
+  border-left: 3px solid ${(p) => (p.$failed ? p.$failBorder : "transparent")};
+  box-shadow: ${(p) => (p.$open ? `inset 3px 0 0 ${p.$accentColor}` : "none")};
   animation: ${fadeIn} 0.15s ease both;
   transition: filter 0.1s;
-  &:hover { filter: brightness(0.97); }
+  &:hover {
+    filter: brightness(0.97);
+  }
 `;
 
 const ExpandCell = styled(Td)`
@@ -202,7 +260,9 @@ const UrlText = styled.div`
 const UrlAnchor = styled.a<{ $color: string }>`
   color: ${(p) => p.$color};
   text-decoration: none;
-  &:hover { text-decoration: underline; }
+  &:hover {
+    text-decoration: underline;
+  }
 `;
 
 const SubLine = styled.div<{ $color: string }>`
@@ -257,7 +317,9 @@ const ExpandedGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px 24px;
-  @media (max-width: 600px) { grid-template-columns: 1fr; }
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 const ExpandedFieldLabel = styled.div<{ $color: string }>`
@@ -302,19 +364,31 @@ const PaginationWrap = styled.div`
   gap: 6px;
 `;
 
-const PageBtn = styled.button<{ $border: string; $bg: string; $color: string; $active?: boolean; $activeBg?: string; $activeTxt?: string }>`
+const PageBtn = styled.button<{
+  $border: string;
+  $bg: string;
+  $color: string;
+  $active?: boolean;
+  $activeBg?: string;
+  $activeTxt?: string;
+}>`
   padding: 3px 9px;
   font-size: 12px;
   font-weight: 600;
   border-radius: 6px;
   border: 1px solid ${(p) => p.$border};
-  background: ${(p) => p.$active ? (p.$activeBg ?? p.$bg) : p.$bg};
-  color: ${(p) => p.$active ? (p.$activeTxt ?? p.$color) : p.$color};
+  background: ${(p) => (p.$active ? (p.$activeBg ?? p.$bg) : p.$bg)};
+  color: ${(p) => (p.$active ? (p.$activeTxt ?? p.$color) : p.$color)};
   cursor: pointer;
   font-family: inherit;
   transition: opacity 0.15s;
-  &:disabled { opacity: 0.35; cursor: not-allowed; }
-  &:not(:disabled):hover { opacity: 0.75; }
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+  &:not(:disabled):hover {
+    opacity: 0.75;
+  }
 `;
 
 const PageSizeSelect = styled.select<{ $border: string; $bg: string; $color: string }>`
@@ -353,7 +427,12 @@ const ExecutionBadge = styled.span<{ $color: string }>`
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function isFailed(r: ScanResult) {
-  return !!(r.scanStatus === "Blocked (automation)" || r.titleStatus === "Fail" || r.descriptionStatus === "Fail" || r.error);
+  return !!(
+    r.scanStatus === "Blocked (automation)" ||
+    r.titleStatus === "Fail" ||
+    r.descriptionStatus === "Fail" ||
+    r.error
+  );
 }
 function isPassed(r: ScanResult) {
   return r.scanStatus === "success" && r.titleStatus === "Pass" && r.descriptionStatus === "Pass";
@@ -388,22 +467,34 @@ function ExpandedRow({ r, colSpan, t }: { r: ScanResult; colSpan: number; t: Tok
     <tr>
       <ExpandedTd colSpan={colSpan} $bg={t.bgSubtle} $border={t.border}>
         {blocked ? (
-          <ExpandedValue $color={t.textMuted} style={{ fontStyle: "italic", display: "flex", alignItems: "center", gap: 6 }}>
-            <RiProhibitedLine size={14} /> This page was blocked by bot protection or an interstitial.
+          <ExpandedValue
+            $color={t.textMuted}
+            style={{ fontStyle: "italic", display: "flex", alignItems: "center", gap: 6 }}
+          >
+            <RiProhibitedLine size={14} /> This page was blocked by bot protection or an
+            interstitial.
           </ExpandedValue>
         ) : (
           <ExpandedGrid>
             <div>
               <ExpandedFieldLabel $color={t.textMuted}>SEO Title</ExpandedFieldLabel>
-              {r.title
-                ? <ExpandedValue $color={t.text}>{r.title}</ExpandedValue>
-                : <ExpandedValue $color={t.textFaint} style={{ fontStyle: "italic" }}>(missing)</ExpandedValue>}
+              {r.title ? (
+                <ExpandedValue $color={t.text}>{r.title}</ExpandedValue>
+              ) : (
+                <ExpandedValue $color={t.textFaint} style={{ fontStyle: "italic" }}>
+                  (missing)
+                </ExpandedValue>
+              )}
             </div>
             <div>
               <ExpandedFieldLabel $color={t.textMuted}>Meta Description</ExpandedFieldLabel>
-              {r.description
-                ? <ExpandedValue $color={t.text}>{r.description}</ExpandedValue>
-                : <ExpandedValue $color={t.textFaint} style={{ fontStyle: "italic" }}>(missing)</ExpandedValue>}
+              {r.description ? (
+                <ExpandedValue $color={t.text}>{r.description}</ExpandedValue>
+              ) : (
+                <ExpandedValue $color={t.textFaint} style={{ fontStyle: "italic" }}>
+                  (missing)
+                </ExpandedValue>
+              )}
             </div>
           </ExpandedGrid>
         )}
@@ -428,16 +519,16 @@ export default function ResultsTable({ results, scanTimer }: Props) {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
   // ── Counts ────────────────────────────────────────────────────────────────
-  const failCount    = useMemo(() => results.filter(isFailed).length, [results]);
-  const passCount    = useMemo(() => results.filter(isPassed).length, [results]);
+  const failCount = useMemo(() => results.filter(isFailed).length, [results]);
+  const passCount = useMemo(() => results.filter(isPassed).length, [results]);
   const blockedCount = useMemo(() => results.filter(isBlocked).length, [results]);
-  const allPass      = failCount === 0;
+  const allPass = failCount === 0;
 
   // ── Filter + search ───────────────────────────────────────────────────────
   const filtered = useMemo(() => {
     let rows = results;
-    if (tab === "failed")  rows = rows.filter(isFailed);
-    if (tab === "passed")  rows = rows.filter(isPassed);
+    if (tab === "failed") rows = rows.filter(isFailed);
+    if (tab === "passed") rows = rows.filter(isPassed);
     if (tab === "blocked") rows = rows.filter(isBlocked);
     if (search.trim()) {
       const q = search.trim().toLowerCase();
@@ -450,10 +541,20 @@ export default function ResultsTable({ results, scanTimer }: Props) {
   const sorted = useMemo(() => {
     if (!sortKey) return filtered;
     return [...filtered].sort((a, b) => {
-      let av: number | string = 0, bv: number | string = 0;
-      if (sortKey === "url")         { av = a.url; bv = b.url; }
-      if (sortKey === "titleLength") { av = a.titleLength; bv = b.titleLength; }
-      if (sortKey === "descLength")  { av = a.descriptionLength; bv = b.descriptionLength; }
+      let av: number | string = 0,
+        bv: number | string = 0;
+      if (sortKey === "url") {
+        av = a.url;
+        bv = b.url;
+      }
+      if (sortKey === "titleLength") {
+        av = a.titleLength;
+        bv = b.titleLength;
+      }
+      if (sortKey === "descLength") {
+        av = a.descriptionLength;
+        bv = b.descriptionLength;
+      }
       if (av < bv) return sortDir === "asc" ? -1 : 1;
       if (av > bv) return sortDir === "asc" ? 1 : -1;
       return 0;
@@ -462,8 +563,8 @@ export default function ResultsTable({ results, scanTimer }: Props) {
 
   // ── Pagination ────────────────────────────────────────────────────────────
   const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
-  const safePage   = Math.min(page, totalPages);
-  const pageRows   = sorted.slice((safePage - 1) * pageSize, safePage * pageSize);
+  const safePage = Math.min(page, totalPages);
+  const pageRows = sorted.slice((safePage - 1) * pageSize, safePage * pageSize);
   const showPagination = sorted.length > PAGINATION_THRESHOLD;
 
   function handleTabChange(next: TabFilter) {
@@ -480,7 +581,7 @@ export default function ResultsTable({ results, scanTimer }: Props) {
 
   function handleSort(key: typeof sortKey) {
     if (sortKey === key) {
-      setSortDir((d) => d === "asc" ? "desc" : "asc");
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     } else {
       setSortKey(key);
       setSortDir("asc");
@@ -505,17 +606,16 @@ export default function ResultsTable({ results, scanTimer }: Props) {
   const toolbarBg = allPass ? t.toolbarPassBg : t.toolbarFailBg;
 
   const tabDefs: { key: TabFilter; label: string; count: number }[] = [
-    { key: "all",     label: "All",     count: results.length },
-    { key: "failed",  label: "Failed",  count: failCount },
-    { key: "passed",  label: "Passed",  count: passCount },
+    { key: "all", label: "All", count: results.length },
+    { key: "failed", label: "Failed", count: failCount },
+    { key: "passed", label: "Passed", count: passCount },
     { key: "blocked", label: "Blocked", count: blockedCount },
   ];
 
   return (
-    <TableWrap $border={t.border} $bg={t.bg}>
-
+    <TableWrap data-testid="results-table" className="results-table" $border={t.border} $bg={t.bg}>
       {/* ── Summary bar ── */}
-      <SummaryBar $bg={t.bgSubtle} $border={t.border}>
+      <SummaryBar data-testid="results-summary" $bg={t.bgSubtle} $border={t.border}>
         <SummaryChip $color={t.textMuted}>
           <RiCheckboxCircleFill size={12} style={{ opacity: 0.5 }} />
           {results.length} URLs
@@ -544,19 +644,25 @@ export default function ResultsTable({ results, scanTimer }: Props) {
       </SummaryBar>
 
       {/* ── Toolbar: tabs + search + copy ── */}
-      <Toolbar $border={t.border} $bg={toolbarBg}>
-        <TabGroup>
+      <Toolbar data-testid="results-toolbar" $border={t.border} $bg={toolbarBg}>
+        <TabGroup data-testid="filter-tabs">
           {tabDefs.map(({ key, label, count }) => {
             const disabled = count === 0 && key !== "all";
             return (
               <TabBtn
                 key={key}
-                onClick={() => { if (!disabled) handleTabChange(key); }}
+                data-testid={`filter-tab-${key}`}
+                className={`filter-tab ${tab === key && !disabled ? "active" : ""}`}
+                onClick={() => {
+                  if (!disabled) handleTabChange(key);
+                }}
                 disabled={disabled}
                 $active={tab === key && !disabled}
                 $disabled={disabled}
-                $activeBg={t.btnActive} $idleBg={t.btnIdle}
-                $activeTxt={t.btnActiveTxt} $idleTxt={t.btnIdleTxt}
+                $activeBg={t.btnActive}
+                $idleBg={t.btnIdle}
+                $activeTxt={t.btnActiveTxt}
+                $idleTxt={t.btnIdleTxt}
                 $border={t.border}
               >
                 {label} ({count})
@@ -566,9 +672,11 @@ export default function ResultsTable({ results, scanTimer }: Props) {
         </TabGroup>
 
         <ToolbarRight>
-          <SearchWrap $border={t.border} $bg={t.bg}>
+          <SearchWrap data-testid="search-wrap" $border={t.border} $bg={t.bg}>
             <RiSearchLine size={13} color={t.textFaint} />
             <SearchInput
+              data-testid="results-search-input"
+              className="results-search-input"
               placeholder="Search URLs…"
               value={search}
               onChange={(e) => handleSearch(e.target.value)}
@@ -577,10 +685,13 @@ export default function ResultsTable({ results, scanTimer }: Props) {
             />
           </SearchWrap>
           <CopyBtn
+            data-testid="copy-results-btn"
             onClick={handleCopy}
             $copied={copied}
-            $passBg={t.passBg} $idleBg={t.btnIdle}
-            $passTxt={t.passText} $idleTxt={t.btnIdleTxt}
+            $passBg={t.passBg}
+            $idleBg={t.btnIdle}
+            $passTxt={t.passText}
+            $idleTxt={t.btnIdleTxt}
             $border={t.border}
           >
             <IconWrap>
@@ -598,14 +709,21 @@ export default function ResultsTable({ results, scanTimer }: Props) {
             <tr>
               <Th $bg={t.headerBg} $border={t.border} $color={t.textMuted} style={{ width: 32 }} />
               <Th
-                $bg={t.headerBg} $border={t.border} $color={t.textMuted}
-                $sortable onClick={() => handleSort("url")}
+                $bg={t.headerBg}
+                $border={t.border}
+                $color={t.textMuted}
+                $sortable
+                onClick={() => handleSort("url")}
               >
                 URL{sortIndicator("url")}
               </Th>
               <Th
-                $bg={t.headerBg} $border={t.border} $color={t.textMuted} $align="center"
-                $sortable onClick={() => handleSort("titleLength")}
+                $bg={t.headerBg}
+                $border={t.border}
+                $color={t.textMuted}
+                $align="center"
+                $sortable
+                onClick={() => handleSort("titleLength")}
               >
                 Title Length{sortIndicator("titleLength")}
               </Th>
@@ -613,8 +731,12 @@ export default function ResultsTable({ results, scanTimer }: Props) {
                 Title Status
               </Th>
               <Th
-                $bg={t.headerBg} $border={t.border} $color={t.textMuted} $align="center"
-                $sortable onClick={() => handleSort("descLength")}
+                $bg={t.headerBg}
+                $border={t.border}
+                $color={t.textMuted}
+                $align="center"
+                $sortable
+                onClick={() => handleSort("descLength")}
               >
                 Desc. Length{sortIndicator("descLength")}
               </Th>
@@ -632,12 +754,14 @@ export default function ResultsTable({ results, scanTimer }: Props) {
               </EmptyRow>
             ) : (
               pageRows.map((r) => {
-                const failed  = isFailed(r);
+                const failed = isFailed(r);
                 const blocked = isBlocked(r);
-                const isOpen  = openUrl === r.url;
+                const isOpen = openUrl === r.url;
                 return (
                   <Fragment key={r.url}>
                     <DataRow
+                      data-testid={`result-row-${r.url}`}
+                      className={`result-row ${failed ? "failed" : "passed"} ${isOpen ? "expanded" : ""}`}
                       $bg={failed ? t.rowFail : t.rowOk}
                       $open={isOpen}
                       $accentColor={t.btnActive}
@@ -650,7 +774,13 @@ export default function ResultsTable({ results, scanTimer }: Props) {
                       </ExpandCell>
                       <UrlCell $border={t.border} $color={t.text}>
                         <UrlText>
-                          <UrlAnchor href={r.url} target="_blank" rel="noreferrer" $color={t.link} onClick={(e) => e.stopPropagation()}>
+                          <UrlAnchor
+                            href={r.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            $color={t.link}
+                            onClick={(e) => e.stopPropagation()}
+                          >
                             {r.url}
                           </UrlAnchor>
                         </UrlText>
@@ -665,7 +795,13 @@ export default function ResultsTable({ results, scanTimer }: Props) {
                           <SubLine $color={t.textMuted}>
                             <IconWrap>
                               <RiCornerDownRightLine size={11} /> redirected to{" "}
-                              <UrlAnchor href={r.finalUrl} target="_blank" rel="noreferrer" $color={t.textMuted} onClick={(e) => e.stopPropagation()}>
+                              <UrlAnchor
+                                href={r.finalUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                $color={t.textMuted}
+                                onClick={(e) => e.stopPropagation()}
+                              >
                                 {r.finalUrl}
                               </UrlAnchor>
                             </IconWrap>
@@ -673,28 +809,54 @@ export default function ResultsTable({ results, scanTimer }: Props) {
                         )}
                         {r.methodUsed && <SubLine $color={t.textFaint}>via {r.methodUsed}</SubLine>}
                         {r.attempts !== undefined && r.attempts > 1 && (
-                          <SubLine $color={t.warnText}><IconWrap><RiAlertLine size={11} /> {r.attempts} attempts</IconWrap></SubLine>
+                          <SubLine $color={t.warnText}>
+                            <IconWrap>
+                              <RiAlertLine size={11} /> {r.attempts} attempts
+                            </IconWrap>
+                          </SubLine>
                         )}
-                        {r.error && <SubLine $color={t.failText}><IconWrap><RiAlertLine size={11} /> {r.error}</IconWrap></SubLine>}
+                        {r.error && (
+                          <SubLine $color={t.failText}>
+                            <IconWrap>
+                              <RiAlertLine size={11} /> {r.error}
+                            </IconWrap>
+                          </SubLine>
+                        )}
                       </UrlCell>
 
                       <Td $border={t.border} $color={t.text} $align="center">
-                        {blocked ? <MissingSpan $color={t.textFaint}>—</MissingSpan> :
-                          r.title
-                            ? <LengthSpan $color={r.titleStatus === "Pass" ? t.passText : t.failText}>{r.titleLength} chars</LengthSpan>
-                            : <MissingSpan $color={t.textFaint}>(missing)</MissingSpan>}
+                        {blocked ? (
+                          <MissingSpan $color={t.textFaint}>—</MissingSpan>
+                        ) : r.title ? (
+                          <LengthSpan $color={r.titleStatus === "Pass" ? t.passText : t.failText}>
+                            {r.titleLength} chars
+                          </LengthSpan>
+                        ) : (
+                          <MissingSpan $color={t.textFaint}>(missing)</MissingSpan>
+                        )}
                       </Td>
                       <Td $border={t.border} $color={t.text} $align="center">
                         {blocked ? <BlockedPill t={t} /> : <Pill status={r.titleStatus} t={t} />}
                       </Td>
                       <Td $border={t.border} $color={t.text} $align="center">
-                        {blocked ? <MissingSpan $color={t.textFaint}>—</MissingSpan> :
-                          r.description
-                            ? <LengthSpan $color={r.descriptionStatus === "Pass" ? t.passText : t.failText}>{r.descriptionLength} chars</LengthSpan>
-                            : <MissingSpan $color={t.textFaint}>(missing)</MissingSpan>}
+                        {blocked ? (
+                          <MissingSpan $color={t.textFaint}>—</MissingSpan>
+                        ) : r.description ? (
+                          <LengthSpan
+                            $color={r.descriptionStatus === "Pass" ? t.passText : t.failText}
+                          >
+                            {r.descriptionLength} chars
+                          </LengthSpan>
+                        ) : (
+                          <MissingSpan $color={t.textFaint}>(missing)</MissingSpan>
+                        )}
                       </Td>
                       <Td $border={t.border} $color={t.text} $align="center">
-                        {blocked ? <BlockedPill t={t} /> : <Pill status={r.descriptionStatus} t={t} />}
+                        {blocked ? (
+                          <BlockedPill t={t} />
+                        ) : (
+                          <Pill status={r.descriptionStatus} t={t} />
+                        )}
                       </Td>
                     </DataRow>
                     {isOpen && <ExpandedRow r={r} colSpan={6} t={t} />}
@@ -716,9 +878,7 @@ export default function ResultsTable({ results, scanTimer }: Props) {
               : `${failCount} of ${results.length} pages need attention.`}
           </IconWrap>
           {sorted.length !== results.length && (
-            <ExecutionBadge $color={t.textFaint}>
-              · showing {sorted.length} filtered
-            </ExecutionBadge>
+            <ExecutionBadge $color={t.textFaint}>· showing {sorted.length} filtered</ExecutionBadge>
           )}
         </FooterLeft>
 
@@ -726,18 +886,27 @@ export default function ResultsTable({ results, scanTimer }: Props) {
           <PaginationWrap>
             <PageSizeSelect
               value={pageSize}
-              onChange={(e) => { setPageSize(Number(e.target.value) as PageSize); setPage(1); }}
-              $border={t.border} $bg={t.bgMuted} $color={t.text}
+              onChange={(e) => {
+                setPageSize(Number(e.target.value) as PageSize);
+                setPage(1);
+              }}
+              $border={t.border}
+              $bg={t.bgMuted}
+              $color={t.text}
             >
               {PAGE_SIZE_OPTIONS.map((s) => (
-                <option key={s} value={s}>{s} / page</option>
+                <option key={s} value={s}>
+                  {s} / page
+                </option>
               ))}
             </PageSizeSelect>
 
             <PageBtn
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={safePage <= 1}
-              $border={t.border} $bg={t.bgMuted} $color={t.text}
+              $border={t.border}
+              $bg={t.bgMuted}
+              $color={t.text}
             >
               <RiArrowLeftSLine size={14} />
             </PageBtn>
@@ -752,7 +921,12 @@ export default function ResultsTable({ results, scanTimer }: Props) {
               }, [])
               .map((p, i) =>
                 p === "…" ? (
-                  <span key={`ellipsis-${i}`} style={{ color: t.textFaint, fontSize: 12, padding: "0 2px" }}>…</span>
+                  <span
+                    key={`ellipsis-${i}`}
+                    style={{ color: t.textFaint, fontSize: 12, padding: "0 2px" }}
+                  >
+                    …
+                  </span>
                 ) : (
                   <PageBtn
                     key={p}
@@ -772,7 +946,9 @@ export default function ResultsTable({ results, scanTimer }: Props) {
             <PageBtn
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={safePage >= totalPages}
-              $border={t.border} $bg={t.bgMuted} $color={t.text}
+              $border={t.border}
+              $bg={t.bgMuted}
+              $color={t.text}
             >
               <RiArrowRightSLine size={14} />
             </PageBtn>

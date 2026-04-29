@@ -82,8 +82,12 @@ const ThemeToggle = styled.button<{ $border: string; $bg: string; $color: string
   align-items: center;
   gap: 6px;
   transition: opacity 0.15s;
-  &:hover { opacity: 0.7; }
-  &:active { opacity: 0.5; }
+  &:hover {
+    opacity: 0.7;
+  }
+  &:active {
+    opacity: 0.5;
+  }
 `;
 
 const ErrorBanner = styled.div<{ $bg: string; $color: string }>`
@@ -148,7 +152,9 @@ const CrawlSummary = styled.div<{ $bg: string; $border: string; $color: string }
 `;
 
 const SummaryItem = styled.span<{ $accent: string }>`
-  & strong { color: ${(p) => p.$accent}; }
+  & strong {
+    color: ${(p) => p.$accent};
+  }
 `;
 
 const MascotArea = styled.div`
@@ -195,7 +201,9 @@ const SecondaryBtn = styled.button<{ $border: string; $color: string; $bg: strin
   cursor: pointer;
   font-family: inherit;
   transition: opacity 0.15s;
-  &:not(:disabled):hover { opacity: 0.75; }
+  &:not(:disabled):hover {
+    opacity: 0.75;
+  }
 `;
 
 // Collapsible scope controls wrapper with smooth transition
@@ -203,7 +211,9 @@ const ScopeControlsWrap = styled.div<{ $visible: boolean }>`
   max-height: ${(p) => (p.$visible ? "600px" : "0")};
   opacity: ${(p) => (p.$visible ? 1 : 0)};
   pointer-events: ${(p) => (p.$visible ? "auto" : "none")};
-  transition: max-height 0.3s ease, opacity 0.25s ease;
+  transition:
+    max-height 0.3s ease,
+    opacity 0.25s ease;
 `;
 
 const RescanNote = styled.div<{ $color: string; $bg: string; $border: string }>`
@@ -223,7 +233,9 @@ const Footer = styled.footer`
   font-size: 11px;
   opacity: 0.45;
   transition: opacity 0.15s;
-  &:hover { opacity: 0.8; }
+  &:hover {
+    opacity: 0.8;
+  }
 `;
 
 const FooterLink = styled.a`
@@ -232,7 +244,10 @@ const FooterLink = styled.a`
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  &:hover { color: #7c3aed; text-decoration: underline; }
+  &:hover {
+    color: #7c3aed;
+    text-decoration: underline;
+  }
 `;
 
 export default function Home() {
@@ -279,7 +294,7 @@ export default function Home() {
 
   // AbortController refs — one per cancellable operation
   const crawlAbortRef = useRef<AbortController | null>(null);
-  const scanAbortRef  = useRef<AbortController | null>(null);
+  const scanAbortRef = useRef<AbortController | null>(null);
   // Session counter — incremented on each new scan so stale responses are ignored
   const scanSessionRef = useRef(0);
 
@@ -315,7 +330,9 @@ export default function Home() {
 
   // Load history after mount to avoid SSR mismatch
   const [history, setHistory] = useState<HistoryEntry[]>([]);
-  useEffect(() => { setHistory(loadHistory()); }, []);
+  useEffect(() => {
+    setHistory(loadHistory());
+  }, []);
 
   function pushHistory(updated: HistoryEntry[]) {
     setHistory(updated);
@@ -360,7 +377,11 @@ export default function Home() {
   // ── Manual scan ────────────────────────────────────────────────────────────
 
   async function handleManualScan() {
-    const urls = manualInput.split("\n").map((u) => u.trim()).filter(Boolean).slice(0, MAX_MANUAL_URLS);
+    const urls = manualInput
+      .split("\n")
+      .map((u) => u.trim())
+      .filter(Boolean)
+      .slice(0, MAX_MANUAL_URLS);
     if (urls.length === 0) return;
     pushHistory(addHistoryEntry(history, "manual", manualInput.trim()));
 
@@ -369,19 +390,36 @@ export default function Home() {
     const sessionId = ++scanSessionRef.current;
     scanStartRef.current = Date.now();
     setScanTimer({ duration: null, status: null });
-    setIsScanning(true); setResults([]); setError(null);
+    setIsScanning(true);
+    setResults([]);
+    setError(null);
     try {
-      const { results: data } = await callScanApi(urls, undefined, abort.signal, "/api/scan-improved", performanceMode);
+      const { results: data } = await callScanApi(
+        urls,
+        undefined,
+        abort.signal,
+        "/api/scan-improved",
+        performanceMode
+      );
       if (sessionId === scanSessionRef.current && !abort.signal.aborted) {
         setResults(data);
-        setScanTimer({ duration: Date.now() - (scanStartRef.current ?? Date.now()), status: "completed" });
+        setScanTimer({
+          duration: Date.now() - (scanStartRef.current ?? Date.now()),
+          status: "completed",
+        });
       }
     } catch (e) {
       if ((e as Error).name === "AbortError") {
         if (sessionId === scanSessionRef.current)
-          setScanTimer({ duration: Date.now() - (scanStartRef.current ?? Date.now()), status: "cancelled" });
+          setScanTimer({
+            duration: Date.now() - (scanStartRef.current ?? Date.now()),
+            status: "cancelled",
+          });
       } else if (sessionId === scanSessionRef.current) {
-        setScanTimer({ duration: Date.now() - (scanStartRef.current ?? Date.now()), status: "failed" });
+        setScanTimer({
+          duration: Date.now() - (scanStartRef.current ?? Date.now()),
+          status: "failed",
+        });
         setError(e instanceof Error ? e.message : "Something went wrong.");
       }
     } finally {
@@ -408,7 +446,10 @@ export default function Home() {
 
     const abort = new AbortController();
     crawlAbortRef.current = abort;
-    setIsCrawling(true); setCrawlResult(null); setResults([]); setError(null);
+    setIsCrawling(true);
+    setCrawlResult(null);
+    setResults([]);
+    setError(null);
     setSelectedGroups([]);
     try {
       const res = await fetch("/api/sitemap", {
@@ -447,10 +488,11 @@ export default function Home() {
     // Reuse the existing snapshot ONLY if it matches the current filter config —
     // this ensures benchmark comparisons use identical inputs across both pipelines.
     // If scope, exclusions, or limit changed, always create a fresh snapshot.
-    const snapshotMatches = benchmarkSnapshot
-      && benchmarkSnapshot.scanScope === scope
-      && benchmarkSnapshot.scanLimit === (limit ?? null)
-      && JSON.stringify(benchmarkSnapshot.exclusions) === JSON.stringify(selectedGroups);
+    const snapshotMatches =
+      benchmarkSnapshot &&
+      benchmarkSnapshot.scanScope === scope &&
+      benchmarkSnapshot.scanLimit === (limit ?? null) &&
+      JSON.stringify(benchmarkSnapshot.exclusions) === JSON.stringify(selectedGroups);
 
     const snapshot = snapshotMatches
       ? benchmarkSnapshot!
@@ -466,36 +508,65 @@ export default function Home() {
     scanStartRef.current = Date.now();
     setScanTimer({ duration: null, status: null });
     setPipelineUsed(null);
-    setIsScanning(true); setResults([]); setError(null);
+    setIsScanning(true);
+    setResults([]);
+    setError(null);
     try {
       const apiRoute = pipeline === "improved" ? "/api/scan-improved" : "/api/scan";
       const perfMode = pipeline === "improved" ? performanceMode : undefined;
-      const { results: data, durationMs } = await callScanApi(urlsToScan, limit, abort.signal, apiRoute, perfMode, benchmarkRunMode);
+      const { results: data, durationMs } = await callScanApi(
+        urlsToScan,
+        limit,
+        abort.signal,
+        apiRoute,
+        perfMode,
+        benchmarkRunMode
+      );
       if (sessionId === scanSessionRef.current && !abort.signal.aborted) {
         setResults(data);
         setPipelineUsed(pipeline);
-        setScanTimer({ duration: Date.now() - (scanStartRef.current ?? Date.now()), status: "completed" });
+        setScanTimer({
+          duration: Date.now() - (scanStartRef.current ?? Date.now()),
+          status: "completed",
+        });
         setShowScopeControls(false);
         setScopeChangedAfterScan(false);
 
-        const metrics = computeMetrics(pipeline, data, durationMs || (Date.now() - (scanStartRef.current ?? Date.now())), {
-          urlsQueued: snapshot.queueSize,
-          scanScope: scope,
-          scanLimit: limit ?? null,
-          concurrency: pipeline === "improved" ? PERFORMANCE_CONFIGS[performanceMode].concurrency : null,
-          browserReuse: true,
-          performanceMode: pipeline === "improved" ? performanceMode : null,
-          runMode: benchmarkRunMode,
-        });
-        if (pipeline === "previous") { setBenchPrevious(metrics); setPrevResults(data); }
-        else { setBenchImproved(metrics); setImprResults(data); }
+        const metrics = computeMetrics(
+          pipeline,
+          data,
+          durationMs || Date.now() - (scanStartRef.current ?? Date.now()),
+          {
+            urlsQueued: snapshot.queueSize,
+            scanScope: scope,
+            scanLimit: limit ?? null,
+            concurrency:
+              pipeline === "improved" ? PERFORMANCE_CONFIGS[performanceMode].concurrency : null,
+            browserReuse: true,
+            performanceMode: pipeline === "improved" ? performanceMode : null,
+            runMode: benchmarkRunMode,
+          }
+        );
+        if (pipeline === "previous") {
+          setBenchPrevious(metrics);
+          setPrevResults(data);
+        } else {
+          setBenchImproved(metrics);
+          setImprResults(data);
+        }
       }
     } catch (e) {
       if ((e as Error).name === "AbortError") {
         if (sessionId === scanSessionRef.current)
-          setScanTimer({ duration: Date.now() - (scanStartRef.current ?? Date.now()), status: "cancelled" });
+          setScanTimer({
+            duration: Date.now() - (scanStartRef.current ?? Date.now()),
+            status: "cancelled",
+          });
       } else if (sessionId === scanSessionRef.current) {
-        setScanTimer({ duration: Date.now() - (scanStartRef.current ?? Date.now()), status: "failed" });
+        setScanTimer({
+          duration: Date.now() - (scanStartRef.current ?? Date.now()),
+          status: "failed",
+        });
         setError(e instanceof Error ? e.message : "Something went wrong.");
       }
     } finally {
@@ -508,8 +579,13 @@ export default function Home() {
 
   function handleHistorySelect(entry: HistoryEntry) {
     if (isProcessing) return;
-    if (entry.type === "url") { setMode("sitemap"); setSitemapInput(entry.value); }
-    else { setMode("manual"); setManualInput(entry.value); }
+    if (entry.type === "url") {
+      setMode("sitemap");
+      setSitemapInput(entry.value);
+    } else {
+      setMode("manual");
+      setManualInput(entry.value);
+    }
     handleSitemapUrlChange();
   }
 
@@ -519,8 +595,14 @@ export default function Home() {
   }
 
   async function callScanApi(
-    urls: string[], limit?: number, signal?: AbortSignal, route = "/api/scan-improved", perfMode?: PerformanceMode, runMode?: BenchmarkRunMode
-  ): Promise<{ results: ScanResult[]; durationMs: number }> {    const res = await fetch(route, {
+    urls: string[],
+    limit?: number,
+    signal?: AbortSignal,
+    route = "/api/scan-improved",
+    perfMode?: PerformanceMode,
+    runMode?: BenchmarkRunMode
+  ): Promise<{ results: ScanResult[]; durationMs: number }> {
+    const res = await fetch(route, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -540,38 +622,72 @@ export default function Home() {
   }
 
   // Derive mascot state from current scan/results state
-  const mascotState: MascotState = isScanning || isCrawling
-    ? "scanning"
-    : results.length > 0
-      ? results.some(r => r.titleStatus === "Fail" || r.descriptionStatus === "Fail" || r.scanStatus === "Blocked (automation)" || r.error)
-        ? "fail"
-        : "pass"
-      : "idle";
+  const mascotState: MascotState =
+    isScanning || isCrawling
+      ? "scanning"
+      : results.length > 0
+        ? results.some(
+            (r) =>
+              r.titleStatus === "Fail" ||
+              r.descriptionStatus === "Fail" ||
+              r.scanStatus === "Blocked (automation)" ||
+              r.error
+          )
+          ? "fail"
+          : "pass"
+        : "idle";
 
   return (
-    <Main $color={t.text}>
+    <Main data-testid="main-page" $color={t.text}>
       <HeaderRow>
         <HeaderText>
-          <PageTitle>PurrScope</PageTitle>
-          <PageSubtitle $color={t.textMuted}>
+          <PageTitle data-testid="page-title">PurrScope</PageTitle>
+          <PageSubtitle data-testid="page-subtitle" $color={t.textMuted}>
             Automated SEO &amp; Compliance QA
           </PageSubtitle>
         </HeaderText>
-        <ThemeToggle onClick={toggle} title="Toggle light/dark mode" $border={t.border} $bg={t.bgMuted} $color={t.text}>
-          {theme === "light" ? <><RiMoonLine size={14} /> Dark</> : <><RiSunLine size={14} /> Light</>}
+        <ThemeToggle
+          data-testid="theme-toggle"
+          className="theme-toggle"
+          onClick={toggle}
+          title="Toggle light/dark mode"
+          $border={t.border}
+          $bg={t.bgMuted}
+          $color={t.text}
+        >
+          {theme === "light" ? (
+            <>
+              <RiMoonLine size={14} /> Dark
+            </>
+          ) : (
+            <>
+              <RiSunLine size={14} /> Light
+            </>
+          )}
         </ThemeToggle>
       </HeaderRow>
 
-      <MascotArea>
+      <MascotArea data-testid="mascot-area">
         <Mascot state={mascotState} size={110} />
       </MascotArea>
 
       <ModeTabs mode={mode} onChange={handleModeChange} disabled={isProcessing} />
 
-      <RecentSearches entries={history} onSelect={handleHistorySelect} onClear={handleHistoryClear} />
+      <RecentSearches
+        entries={history}
+        onSelect={handleHistorySelect}
+        onClear={handleHistoryClear}
+      />
 
       {mode === "manual" && (
-        <ManualInput value={manualInput} onChange={setManualInput} onScan={handleManualScan} loading={isScanning} onCancel={handleCancelScan} isProcessing={isProcessing} />
+        <ManualInput
+          value={manualInput}
+          onChange={setManualInput}
+          onScan={handleManualScan}
+          loading={isScanning}
+          onCancel={handleCancelScan}
+          isProcessing={isProcessing}
+        />
       )}
 
       {mode === "sitemap" && (
@@ -658,29 +774,36 @@ export default function Home() {
         </>
       )}
 
-      {error && <FriendlyError message={error} bg={t.failBg} color={t.failText} />}
+      {error && (
+        <div data-testid="error-banner">
+          <FriendlyError message={error} bg={t.failBg} color={t.failText} />
+        </div>
+      )}
 
       {/* SitemapDebug — shown before scan, and when scope controls are expanded post-scan */}
-      {mode === "sitemap" && crawlResult && liveFilter && (results.length === 0 || showScopeControls) && (
-        <SitemapDebug
-          crawl={crawlResult}
-          filter={liveFilter}
-          onScan={() => handleScanDiscovered("previous")}
-          onScanImproved={() => handleScanDiscovered("improved")}
-          scanning={isScanning}
-          onCancel={handleCancelScan}
-          scanLimit={scanLimit}
-          onScanLimitChange={setScanLimit}
-          maxScanLimit={availableCount}
-          pipelineUsed={pipelineUsed}
-          performanceMode={performanceMode}
-          onPerformanceModeChange={setPerformanceMode}
-          benchmarkRunMode={benchmarkRunMode}
-          onBenchmarkRunModeChange={setBenchmarkRunMode}
-          onResetBenchmark={resetBenchmark}
-          hasBenchmarkData={!!(benchPrevious || benchImproved)}
-        />
-      )}
+      {mode === "sitemap" &&
+        crawlResult &&
+        liveFilter &&
+        (results.length === 0 || showScopeControls) && (
+          <SitemapDebug
+            crawl={crawlResult}
+            filter={liveFilter}
+            onScan={() => handleScanDiscovered("previous")}
+            onScanImproved={() => handleScanDiscovered("improved")}
+            scanning={isScanning}
+            onCancel={handleCancelScan}
+            scanLimit={scanLimit}
+            onScanLimitChange={setScanLimit}
+            maxScanLimit={availableCount}
+            pipelineUsed={pipelineUsed}
+            performanceMode={performanceMode}
+            onPerformanceModeChange={setPerformanceMode}
+            benchmarkRunMode={benchmarkRunMode}
+            onBenchmarkRunModeChange={setBenchmarkRunMode}
+            onResetBenchmark={resetBenchmark}
+            hasBenchmarkData={!!(benchPrevious || benchImproved)}
+          />
+        )}
 
       {results.length > 0 && <ResultsTable results={results} scanTimer={scanTimer} />}
 

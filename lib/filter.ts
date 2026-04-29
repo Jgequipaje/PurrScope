@@ -94,10 +94,11 @@ export function filterUrls(
 
   // ── Step 1: apply manual exclude patterns ──────────────────────────────────
   const afterPatternExclusion = entries.filter(({ url, sourceSitemap }) => {
-    const blocked = excludePatterns.some((p) =>
-      p.startsWith("http")
-        ? sourceSitemap === p          // sitemap URL match (new)
-        : matchesPattern(url, p)       // glob path match (existing)
+    const blocked = excludePatterns.some(
+      (p) =>
+        p.startsWith("http")
+          ? sourceSitemap === p // sitemap URL match (new)
+          : matchesPattern(url, p) // glob path match (existing)
     );
     if (blocked) excluded.push(url);
     return !blocked;

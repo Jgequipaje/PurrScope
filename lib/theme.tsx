@@ -21,7 +21,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const saved = localStorage.getItem("theme") as Theme | null;
-    const resolved: Theme = (saved === "light" || saved === "dark") ? saved : "dark";
+    const resolved: Theme = saved === "light" || saved === "dark" ? saved : "dark";
     setTheme(resolved);
     document.documentElement.setAttribute("data-theme", resolved);
     setMounted(true);
@@ -47,7 +47,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <ThemeContext.Provider value={{ theme, toggle: () => setTheme((t) => t === "light" ? "dark" : "light") }}>
+    <ThemeContext.Provider
+      value={{ theme, toggle: () => setTheme((t) => (t === "light" ? "dark" : "light")) }}
+    >
       {children}
     </ThemeContext.Provider>
   );
@@ -80,12 +82,12 @@ export const tokens = {
     warnBorder: "#fcd34d",
     successBg: "#f0fdf4",
     successText: "#16a34a",
-    rowFail: "#fffbeb",        // soft amber wash for fail rows
-    rowFailBorder: "#f59e0b",  // amber left border indicator
+    rowFail: "#fffbeb", // soft amber wash for fail rows
+    rowFailBorder: "#f59e0b", // amber left border indicator
     rowOk: "#ffffff",
     headerBg: "#fafafa",
     toolbarPassBg: "#f0fdf4",
-    toolbarFailBg: "#fffbeb",  // amber tint toolbar when failures exist
+    toolbarFailBg: "#fffbeb", // amber tint toolbar when failures exist
     btnActive: "#7c3aed",
     btnActiveTxt: "#ffffff",
     btnIdle: "#f4f4f5",
@@ -114,12 +116,12 @@ export const tokens = {
     warnBorder: "#92400e",
     successBg: "#052e16",
     successText: "#4ade80",
-    rowFail: "#1c1400",        // dark amber wash for fail rows
-    rowFailBorder: "#d97706",  // amber left border indicator
+    rowFail: "#1c1400", // dark amber wash for fail rows
+    rowFailBorder: "#d97706", // amber left border indicator
     rowOk: "#09090b",
     headerBg: "#111113",
     toolbarPassBg: "#052e16",
-    toolbarFailBg: "#1c1400",  // dark amber tint toolbar when failures exist
+    toolbarFailBg: "#1c1400", // dark amber tint toolbar when failures exist
     btnActive: "#7c3aed",
     btnActiveTxt: "#ffffff",
     btnIdle: "#18181b",
