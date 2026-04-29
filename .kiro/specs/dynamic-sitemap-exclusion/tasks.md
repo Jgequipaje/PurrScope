@@ -13,11 +13,11 @@ Replace the free-text Exclude Patterns textarea with a multi-select dropdown dri
   - Export both the type and both functions
   - _Requirements: 1.1, 1.2, 1.3, 1.4_
 
-  - [ ]* 1.1 Write property test for `extractDynamicGroups` filters to `-dpages.xml` only
+  - [ ]\* 1.1 Write property test for `extractDynamicGroups` filters to `-dpages.xml` only
     - **Property 1: extractDynamicGroups filters to -dpages.xml only**
     - **Validates: Requirements 1.1**
 
-  - [ ]* 1.2 Write property test for label round-trip
+  - [ ]\* 1.2 Write property test for label round-trip
     - **Property 2: Label round-trip**
     - **Validates: Requirements 1.2**
 
@@ -26,11 +26,11 @@ Replace the free-text Exclude Patterns textarea with a multi-select dropdown dri
   - Existing glob patterns must continue to work unchanged
   - _Requirements: 4.3, 5.3_
 
-  - [ ]* 2.1 Write property test for filter excludes by sourceSitemap
+  - [ ]\* 2.1 Write property test for filter excludes by sourceSitemap
     - **Property 8: Filter excludes by sourceSitemap**
     - **Validates: Requirements 4.3**
 
-  - [ ]* 2.2 Write property test for combined filter applies patterns before scope
+  - [ ]\* 2.2 Write property test for combined filter applies patterns before scope
     - **Property 9: Combined filter applies patterns before scope**
     - **Validates: Requirements 5.3**
 
@@ -49,19 +49,19 @@ Replace the free-text Exclude Patterns textarea with a multi-select dropdown dri
   - Use `tokens[theme]` from `lib/theme.tsx` for all colours; match border-radius, font-size, and spacing of existing `ScopeSelector` styled components
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 3.10, 6.1, 6.2, 6.3_
 
-  - [ ]* 4.1 Write property test for dropdown visibility matches group presence
+  - [ ]\* 4.1 Write property test for dropdown visibility matches group presence
     - **Property 3: Dropdown visibility matches group presence**
     - **Validates: Requirements 2.1, 2.2**
 
-  - [ ]* 4.2 Write property test for all groups appear as rows with correct checkmark state
+  - [ ]\* 4.2 Write property test for all groups appear as rows with correct checkmark state
     - **Property 4: All groups appear as rows with correct checkmark state**
     - **Validates: Requirements 3.3, 3.4, 3.6**
 
-  - [ ]* 4.3 Write property test for select-then-deselect round trip
+  - [ ]\* 4.3 Write property test for select-then-deselect round trip
     - **Property 5: Select-then-deselect round trip**
     - **Validates: Requirements 3.5**
 
-  - [ ]* 4.4 Write property test for collapsed trigger summary text rule
+  - [ ]\* 4.4 Write property test for collapsed trigger summary text rule
     - **Property 6: Collapsed trigger summary text rule**
     - **Validates: Requirements 3.7**
 
@@ -88,7 +88,7 @@ Replace the free-text Exclude Patterns textarea with a multi-select dropdown dri
   - Remove all references to the old `excludePatterns` string state
   - _Requirements: 1.3, 2.4, 4.1, 4.2, 4.4, 5.1, 5.2, 5.4_
 
-  - [ ]* 7.1 Write property test for selected groups map to excludePatterns
+  - [ ]\* 7.1 Write property test for selected groups map to excludePatterns
     - **Property 7: Selected groups map to excludePatterns**
     - **Validates: Requirements 4.1**
 

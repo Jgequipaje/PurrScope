@@ -9,9 +9,9 @@ PurrScope is an automated SEO & Compliance QA tool. It scans page titles and met
 
 ## SEO Rules
 
-| Field            | Pass range       |
-|------------------|------------------|
-| Title            | 45–61 characters |
+| Field            | Pass range         |
+| ---------------- | ------------------ |
+| Title            | 45–61 characters   |
 | Meta description | 145–161 characters |
 
 ## Page Statuses

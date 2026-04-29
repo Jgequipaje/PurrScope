@@ -10,7 +10,6 @@ A fourth problem affects the URL filtering pipeline: when the "collapse-dynamic"
 
 These collapsing rules are now further hardened: the `deriveParentUrl` function that guesses parents by stripping path segments must be removed entirely — no guessing is permitted under any circumstances. Parent collapsing is only allowed when all four conditions are simultaneously satisfied: the candidate parent exists in the sitemap, it has been explicitly validated (fetched or opened), it returns a successful HTTP status, and its content does not indicate a 404/not-found page. A new `invalid_target` result state is introduced for pages identified as 404/not-found, whose SEO metadata must never be included in validation results. A "Disable parent collapsing" safe mode toggle is added to the UI scope/filter controls. Correctness is always preferred over aggressive collapsing: when uncertain, the system must use `representative_child_fallback` rather than a guessed parent.
 
-
 ## Bug Analysis
 
 ### Current Behavior (Defect)
@@ -58,7 +57,6 @@ These collapsing rules are now further hardened: the `deriveParentUrl` function 
 1.21 WHEN the user wants to avoid all parent collapsing risk THEN the system provides no "safe mode" toggle to disable collapsing entirely, forcing the user to accept the collapsing behavior or manually exclude all dynamic groups.
 
 1.22 WHEN parent collapsing is active THEN the system does not record all attempted parent candidates per group, only the final chosen URL, making it impossible to audit why a particular candidate was accepted or rejected.
-
 
 ### Expected Behavior (Correct)
 
@@ -122,7 +120,6 @@ These collapsing rules are now further hardened: the `deriveParentUrl` function 
 
 2.30 WHEN grouping dynamic URLs for collapsing THEN the system SHALL NOT assume all URLs sharing a first path segment belong under that segment as a parent; it SHALL use real sitemap routes and existing section URLs to determine valid parent candidates.
 
-
 ### Unchanged Behavior (Regression Prevention)
 
 3.1 WHEN a URL is scanned THEN the system SHALL CONTINUE TO validate title and description lengths against the existing SEO rules (title 45–61 chars, description 145–161 chars) and return Pass/Fail status.
@@ -156,7 +153,6 @@ These collapsing rules are now further hardened: the `deriveParentUrl` function 
 3.15 WHEN a page is marked `invalid_target` THEN the system SHALL CONTINUE TO include that page in the scan pipeline result list (it is not silently dropped) — only its SEO metadata is excluded from pass/fail validation.
 
 3.16 WHEN existing SEO validation rules are applied to non-invalid_target pages THEN the system SHALL CONTINUE TO apply those rules unchanged — the `invalid_target` state only suppresses validation for the affected page, not for any other page in the result set.
-
 
 ---
 
