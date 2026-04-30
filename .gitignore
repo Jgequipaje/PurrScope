@@ -33,11 +33,21 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-.kiro
-
 # Playwright
 /test-results/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+# Benchmark results (keep scripts, ignore output)
+/benchmark/results.json
+/benchmark/summary.md
+/benchmark/pipeline-comparison.json
+/benchmark/worker-scaling.json
+/benchmark/memory-analysis.json
+/benchmark/key-metrics.json
+/benchmark/results.csv
+
+RELEASE_TEMPLATE.md
+VERSIONING.md

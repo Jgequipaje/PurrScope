@@ -26,6 +26,7 @@ playwright-automation/  Standalone e2e test suite (own package.json)
 Shared, reusable UI components. Styled with styled-components using `tokens` from `lib/theme.tsx`.
 
 Key components:
+
 - `ModeTabs` — manual/sitemap tab switcher
 - `SitemapDebug` — post-crawl controls (scan limit, start scan)
 - `ScopeSelector` — scope + exclusion filter UI

@@ -26,6 +26,12 @@ export class ManualModePage {
     return this.manualTab;
   }
 
+  getResultRowLink(url?: string): Locator {
+    return this.page.locator(
+      url ? `tr[data-testid='result-row-${url}']` : "tr[data-testid^='result-row']"
+    );
+  }
+
   async inputURL(url: string): Promise<void> {
     await this.inputBox.fill(url);
   }

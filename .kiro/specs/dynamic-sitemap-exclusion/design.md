@@ -53,8 +53,8 @@ Pure utility module — no React, no side effects.
 
 ```ts
 export type DynamicGroup = {
-  label: string;       // e.g. "Blog"
-  sitemapUrl: string;  // e.g. "https://example.com/sitemap-blog-dpages.xml"
+  label: string; // e.g. "Blog"
+  sitemapUrl: string; // e.g. "https://example.com/sitemap-blog-dpages.xml"
 };
 
 /**
@@ -72,6 +72,7 @@ export function labelFromDPagesSitemapUrl(url: string): string;
 ```
 
 Label extraction algorithm:
+
 1. Parse the URL, take the last path segment (the filename).
 2. Strip the `sitemap-` prefix (if present).
 3. Strip the `-dpages.xml` suffix.
@@ -84,14 +85,15 @@ Custom multi-select dropdown component. Uses a `<div>`-based trigger + popover p
 
 ```ts
 type Props = {
-  groups: DynamicGroup[];          // available options
-  selected: string[];              // selected sitemapUrls
+  groups: DynamicGroup[]; // available options
+  selected: string[]; // selected sitemapUrls
   onChange: (urls: string[]) => void;
   disabled?: boolean;
 };
 ```
 
 Rendering rules:
+
 - Collapsed trigger shows: placeholder when empty, labels joined by ", " for ≤2 selections, "{n} selected" for ≥3.
 - Open list shows each group as a row with a checkmark indicator.
 - Clicking outside the open list closes it (via `useEffect` + `mousedown` listener).
@@ -133,8 +135,8 @@ The `excludePatterns` / `onExcludePatternsChange` props are removed and replaced
 
 ```ts
 type DynamicGroup = {
-  label: string;       // human-readable, e.g. "Blog"
-  sitemapUrl: string;  // full URL, e.g. "https://example.com/sitemap-blog-dpages.xml"
+  label: string; // human-readable, e.g. "Blog"
+  sitemapUrl: string; // full URL, e.g. "https://example.com/sitemap-blog-dpages.xml"
 };
 ```
 
@@ -148,10 +150,11 @@ Updated `filterUrls` step 1 logic:
 
 ```ts
 const afterPatternExclusion = entries.filter(({ url, sourceSitemap }) => {
-  const blocked = excludePatterns.some((p) =>
-    p.startsWith("http")
-      ? sourceSitemap === p          // sitemap URL match (new)
-      : matchesPattern(url, p)       // glob path match (existing)
+  const blocked = excludePatterns.some(
+    (p) =>
+      p.startsWith("http")
+        ? sourceSitemap === p // sitemap URL match (new)
+        : matchesPattern(url, p) // glob path match (existing)
   );
   if (blocked) excluded.push(url);
   return !blocked;
@@ -166,44 +169,44 @@ The `sitemapUrls` field already present in `SitemapCrawlResult` is the sole sour
 
 #### State in `app/page.tsx`
 
-| Before | After |
-|---|---|
-| `excludePatterns: string` | `selectedGroups: string[]` |
-| `dynamicGroups` (none) | derived from `crawlResult` inline |
-
+| Before                    | After                             |
+| ------------------------- | --------------------------------- |
+| `excludePatterns: string` | `selectedGroups: string[]`        |
+| `dynamicGroups` (none)    | derived from `crawlResult` inline |
 
 ### Error Handling
 
-| Scenario | Handling |
-|---|---|
-| DPages sitemap URL has no recognisable segment between `sitemap-` and `-dpages.xml` | `labelFromDPagesSitemapUrl` falls back to filename minus `.xml` |
-| `crawlResult` is null (no crawl yet) | `dynamicGroups` is `[]`; dropdown is hidden |
-| All selected groups are deselected before re-crawl | `selectedGroups` is `[]`; `excludePatterns: []` sent to API |
-| Crawl returns no `-dpages.xml` sitemaps | `dynamicGroups` is `[]`; dropdown hidden; no exclude patterns sent |
-| User clicks "Crawl Sitemap" while dropdown is open | Dropdown is disabled during crawl; open state is irrelevant |
+| Scenario                                                                            | Handling                                                           |
+| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| DPages sitemap URL has no recognisable segment between `sitemap-` and `-dpages.xml` | `labelFromDPagesSitemapUrl` falls back to filename minus `.xml`    |
+| `crawlResult` is null (no crawl yet)                                                | `dynamicGroups` is `[]`; dropdown is hidden                        |
+| All selected groups are deselected before re-crawl                                  | `selectedGroups` is `[]`; `excludePatterns: []` sent to API        |
+| Crawl returns no `-dpages.xml` sitemaps                                             | `dynamicGroups` is `[]`; dropdown hidden; no exclude patterns sent |
+| User clicks "Crawl Sitemap" while dropdown is open                                  | Dropdown is disabled during crawl; open state is irrelevant        |
 
 ### Testing Strategy
 
 **Dual approach**: unit tests for specific examples and edge cases; property-based tests for universal correctness guarantees.
 
 **Unit tests** (Jest / Vitest):
+
 - `labelFromDPagesSitemapUrl`: specific examples (standard, hyphenated slug, no prefix, fallback).
 - `extractDynamicGroups`: filters correctly, returns empty for no matches.
 - `ExclusionDropdown` rendering: placeholder text, "{n} selected" threshold, checkmark presence.
 - `filterUrls` with sitemap-URL exclude patterns: verifies sourceSitemap matching.
 
 **Property-based tests** (fast-check, minimum 100 iterations each):
+
 - Each property test must be tagged with a comment in the format:
   `// Feature: dynamic-sitemap-exclusion, Property {N}: {property_text}`
 
-
 ## Correctness Properties
 
-*A property is a characteristic or behavior that should hold true across all valid executions of a system — essentially, a formal statement about what the system should do. Properties serve as the bridge between human-readable specifications and machine-verifiable correctness guarantees.*
+_A property is a characteristic or behavior that should hold true across all valid executions of a system — essentially, a formal statement about what the system should do. Properties serve as the bridge between human-readable specifications and machine-verifiable correctness guarantees._
 
 ### Property 1: extractDynamicGroups filters to -dpages.xml only
 
-*For any* list of sitemap URLs, `extractDynamicGroups` should return exactly those URLs whose filename ends in `-dpages.xml`, and no others.
+_For any_ list of sitemap URLs, `extractDynamicGroups` should return exactly those URLs whose filename ends in `-dpages.xml`, and no others.
 
 **Validates: Requirements 1.1**
 
@@ -211,7 +214,7 @@ The `sitemapUrls` field already present in `SitemapCrawlResult` is the sole sour
 
 ### Property 2: Label round-trip
 
-*For any* non-empty alphanumeric slug string `s`, constructing the URL `https://example.com/sitemap-{s}-dpages.xml` and calling `labelFromDPagesSitemapUrl` should return the title-cased form of `s`.
+_For any_ non-empty alphanumeric slug string `s`, constructing the URL `https://example.com/sitemap-{s}-dpages.xml` and calling `labelFromDPagesSitemapUrl` should return the title-cased form of `s`.
 
 **Validates: Requirements 1.2**
 
@@ -219,7 +222,7 @@ The `sitemapUrls` field already present in `SitemapCrawlResult` is the sole sour
 
 ### Property 3: Dropdown visibility matches group presence
 
-*For any* `dynamicGroups` array passed to `ScopeSelector`, the `ExclusionDropdown` is rendered if and only if the array is non-empty.
+_For any_ `dynamicGroups` array passed to `ScopeSelector`, the `ExclusionDropdown` is rendered if and only if the array is non-empty.
 
 **Validates: Requirements 2.1, 2.2**
 
@@ -227,7 +230,7 @@ The `sitemapUrls` field already present in `SitemapCrawlResult` is the sole sour
 
 ### Property 4: All groups appear as rows with correct checkmark state
 
-*For any* set of `DynamicGroup` options and any subset of selected sitemapUrls, when the dropdown list is open, every group appears as a row, selected groups have a checkmark indicator, and unselected groups do not.
+_For any_ set of `DynamicGroup` options and any subset of selected sitemapUrls, when the dropdown list is open, every group appears as a row, selected groups have a checkmark indicator, and unselected groups do not.
 
 **Validates: Requirements 3.3, 3.4, 3.6**
 
@@ -235,7 +238,7 @@ The `sitemapUrls` field already present in `SitemapCrawlResult` is the sole sour
 
 ### Property 5: Select-then-deselect round trip
 
-*For any* `DynamicGroup`, selecting it and then clicking it again should result in it being absent from the selected set — restoring the original state.
+_For any_ `DynamicGroup`, selecting it and then clicking it again should result in it being absent from the selected set — restoring the original state.
 
 **Validates: Requirements 3.5**
 
@@ -243,7 +246,7 @@ The `sitemapUrls` field already present in `SitemapCrawlResult` is the sole sour
 
 ### Property 6: Collapsed trigger summary text rule
 
-*For any* non-empty selection of `n` groups, the collapsed trigger text should be the labels joined by `", "` when `n ≤ 2`, and `"{n} selected"` when `n ≥ 3`.
+_For any_ non-empty selection of `n` groups, the collapsed trigger text should be the labels joined by `", "` when `n ≤ 2`, and `"{n} selected"` when `n ≥ 3`.
 
 **Validates: Requirements 3.7**
 
@@ -251,7 +254,7 @@ The `sitemapUrls` field already present in `SitemapCrawlResult` is the sole sour
 
 ### Property 7: Selected groups map to excludePatterns
 
-*For any* subset of `DynamicGroup` options that are selected, the `excludePatterns` array derived for the API call should equal the `sitemapUrl` values of those selected groups (and nothing else).
+_For any_ subset of `DynamicGroup` options that are selected, the `excludePatterns` array derived for the API call should equal the `sitemapUrl` values of those selected groups (and nothing else).
 
 **Validates: Requirements 4.1**
 
@@ -259,7 +262,7 @@ The `sitemapUrls` field already present in `SitemapCrawlResult` is the sole sour
 
 ### Property 8: Filter excludes by sourceSitemap
 
-*For any* list of `PageEntry` objects and any set of DPages sitemap URLs passed as `excludePatterns`, `filterUrls` should exclude all entries whose `sourceSitemap` is in the set, and include all others (assuming scope is "all").
+_For any_ list of `PageEntry` objects and any set of DPages sitemap URLs passed as `excludePatterns`, `filterUrls` should exclude all entries whose `sourceSitemap` is in the set, and include all others (assuming scope is "all").
 
 **Validates: Requirements 4.3**
 
@@ -267,7 +270,7 @@ The `sitemapUrls` field already present in `SitemapCrawlResult` is the sole sour
 
 ### Property 9: Combined filter applies patterns before scope
 
-*For any* list of `PageEntry` objects, scope, and excludePatterns, the result of `filterUrls` should be equivalent to first removing entries matching any exclude pattern, then applying the scope filter — in that order.
+_For any_ list of `PageEntry` objects, scope, and excludePatterns, the result of `filterUrls` should be equivalent to first removing entries matching any exclude pattern, then applying the scope filter — in that order.
 
 **Validates: Requirements 5.3**
 
@@ -291,14 +294,14 @@ Focus on specific examples, edge cases, and error conditions:
 Minimum 100 iterations per test. Each test must include a comment:
 `// Feature: dynamic-sitemap-exclusion, Property {N}: {property_text}`
 
-| Test | Property |
-|---|---|
+| Test                                                                                    | Property   |
+| --------------------------------------------------------------------------------------- | ---------- |
 | Generate random URL lists, assert extractDynamicGroups returns only -dpages.xml entries | Property 1 |
-| Generate random slugs, construct URL, assert label round-trip | Property 2 |
-| Generate random groups arrays (empty and non-empty), assert dropdown visibility | Property 3 |
-| Generate random groups + random selected subsets, assert row/checkmark correctness | Property 4 |
-| Generate random group, select then deselect, assert empty selection | Property 5 |
-| Generate random selections of size 1–10, assert summary text rule | Property 6 |
-| Generate random group subsets, assert excludePatterns equals sitemapUrls | Property 7 |
-| Generate random PageEntry lists + random sitemap URL sets, assert filter exclusion | Property 8 |
-| Generate random entries + scope + patterns, assert filter order equivalence | Property 9 |
+| Generate random slugs, construct URL, assert label round-trip                           | Property 2 |
+| Generate random groups arrays (empty and non-empty), assert dropdown visibility         | Property 3 |
+| Generate random groups + random selected subsets, assert row/checkmark correctness      | Property 4 |
+| Generate random group, select then deselect, assert empty selection                     | Property 5 |
+| Generate random selections of size 1–10, assert summary text rule                       | Property 6 |
+| Generate random group subsets, assert excludePatterns equals sitemapUrls                | Property 7 |
+| Generate random PageEntry lists + random sitemap URL sets, assert filter exclusion      | Property 8 |
+| Generate random entries + scope + patterns, assert filter order equivalence             | Property 9 |
