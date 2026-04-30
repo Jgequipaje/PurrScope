@@ -33,7 +33,7 @@ export const PERFORMANCE_CONFIGS: Record<PerformanceMode, PerformanceConfig> = {
     fetchTimeoutMs: 10000,
     pwNavTimeoutMs: 18000,
     pwStabilizeMs: 600,
-    delayBetweenTasksMs: 0,
+    delayBetweenTasksMs: 150, // Added delay to prevent server throttling
     label: "Balanced",
     description: "Good mix of speed and stability (default)",
   },
@@ -42,7 +42,7 @@ export const PERFORMANCE_CONFIGS: Record<PerformanceMode, PerformanceConfig> = {
     fetchTimeoutMs: 7000,
     pwNavTimeoutMs: 14000,
     pwStabilizeMs: 400,
-    delayBetweenTasksMs: 0,
+    delayBetweenTasksMs: 100, // Added delay to prevent server throttling
     label: "Fast",
     description: "Higher throughput — best for powerful PCs",
   },

@@ -1,0 +1,107 @@
+{
+  "project": {
+    "name": "PurrScope",
+    "description": "High-performance SEO audit tool with concurrent scanning",
+    "tech_stack": ["TypeScript", "Next.js 16", "Node.js", "React 19"],
+    "github": "YOUR_GITHUB_URL_HERE",
+    "live_demo": "YOUR_DEMO_URL_HERE"
+  },
+  "performance_metrics": {
+    "sitemap_discovery": {
+      "average_throughput": "465 pages/sec",
+      "peak_throughput": "721 pages/sec",
+      "success_rate": "100%",
+      "memory_usage": "~11 MB"
+    },
+    "scan_performance": {
+      "safe_mode": {
+        "workers": 2,
+        "throughput": "5.6 pages/sec",
+        "success_rate": "97.5%",
+        "memory_peak": "64.53 MB",
+        "memory_per_page": "0.54 MB",
+        "use_case": "Maximum reliability"
+      },
+      "balanced_mode": {
+        "workers": 4,
+        "throughput": "20.5 pages/sec",
+        "success_rate": "95.0%",
+        "memory_peak": "73.16 MB",
+        "memory_per_page": "0.61 MB",
+        "use_case": "Optimal balance (default)",
+        "speedup_vs_safe": "3.7x"
+      },
+      "fast_mode": {
+        "workers": 6,
+        "throughput": "38.8 pages/sec",
+        "success_rate": "96.6%",
+        "memory_peak": "108.02 MB",
+        "memory_per_page": "0.91 MB",
+        "use_case": "Maximum throughput",
+        "speedup_vs_safe": "6.9x"
+      }
+    },
+    "real_world_example": {
+      "scenario": "100-page website audit",
+      "mode": "balanced",
+      "sitemap_discovery_time": "0.2 seconds",
+      "scan_time": "5.8 seconds",
+      "total_time": "~6 seconds",
+      "success_rate": "95%",
+      "memory_usage": "~70 MB"
+    }
+  },
+  "key_features": [
+    "Concurrent scanning with worker pool pattern",
+    "Configurable performance modes (safe/balanced/fast)",
+    "Built-in rate limiting (100-300ms delays)",
+    "Efficient memory usage (<1 MB per page)",
+    "100% sitemap discovery success rate",
+    "95-97% scan success rate"
+  ],
+  "technical_highlights": [
+    "Worker pool pattern for concurrent processing",
+    "Intelligent rate limiting to prevent server throttling",
+    "AbortController-based timeout management",
+    "Fetch-only approach (no browser overhead)",
+    "Sub-linear memory scaling",
+    "TypeScript strict mode for type safety"
+  ],
+  "benchmark_details": {
+    "test_environment": {
+      "os": "Windows 11 (win32 x64)",
+      "node_version": "v24.14.1",
+      "test_date": "April 30, 2026"
+    },
+    "test_dataset": {
+      "sites": 5,
+      "total_pages": 380,
+      "page_range": "43-119 pages per site",
+      "site_types": "Real-world real estate websites"
+    },
+    "methodology": [
+      "Phase 1: Sitemap crawl performance testing",
+      "Phase 2: Scan performance with balanced mode",
+      "Phase 3: Worker scaling analysis (all modes)"
+    ]
+  },
+  "use_cases": {
+    "ideal_for": [
+      "SEO audits and compliance checking",
+      "Bulk website analysis",
+      "Automated monitoring systems",
+      "Pre-deployment validation"
+    ],
+    "limitations": [
+      "No JavaScript rendering (fetch-only)",
+      "May encounter bot detection on some sites"
+    ]
+  },
+  "portfolio_highlights": [
+    "🚀 465 pages/sec sitemap discovery",
+    "⚡ 38.8 pages/sec peak scan throughput",
+    "📊 6.9x speedup with optimized settings",
+    "✅ 95-97% success rate across all modes",
+    "💾 0.6-0.9 MB/page memory efficiency"
+  ]
+}

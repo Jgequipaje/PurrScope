@@ -8,7 +8,9 @@
     "start": "next start",
     "test": "vitest --run",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "benchmark": "tsx benchmark/run-benchmarks.ts",
+    "benchmark:analyze": "tsx benchmark/analyze-results.ts"
   },
   "dependencies": {
     "next": "^16.2.2",

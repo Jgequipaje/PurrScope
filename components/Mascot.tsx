@@ -190,7 +190,12 @@ export default function Mascot({ state, size = 100 }: Props) {
       <ImageWrap $state={state} $size={size}>
         <img src="/mascot.png" alt="PurrScope mascot" />
       </ImageWrap>
-      <Bubble $bg={bubbleBg} $border={bubbleBorder} $color={bubbleColor}>
+      <Bubble
+        $bg={bubbleBg}
+        $border={bubbleBorder}
+        $color={bubbleColor}
+        data-testid="mascot-message"
+      >
         {MESSAGES[state]}
       </Bubble>
     </Wrap>
