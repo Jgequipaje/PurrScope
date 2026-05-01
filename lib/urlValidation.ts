@@ -7,7 +7,8 @@
  * Returns true if the string is a well-formed http/https URL.
  * Handles: empty input, whitespace-only, missing protocol, malformed hosts.
  */
-export function isValidUrl(value: string): boolean {
+export function isValidUrl(value: string | undefined | null): boolean {
+  if (!value) return false;
   const trimmed = value.trim();
   if (!trimmed) return false;
   try {
@@ -22,7 +23,8 @@ export function isValidUrl(value: string): boolean {
  * Returns a normalised form of a valid URL (lowercase scheme+host, no trailing slash).
  * Returns the original trimmed string if parsing fails.
  */
-export function normalizeUrlString(value: string): string {
+export function normalizeUrlString(value: string | undefined | null): string {
+  if (!value) return "";
   const trimmed = value.trim();
   try {
     const u = new URL(trimmed);
@@ -37,7 +39,8 @@ export function normalizeUrlString(value: string): string {
  * Returns a short human-readable hint explaining why a URL is invalid.
  * Returns null when the URL is valid (no hint needed).
  */
-export function urlValidationHint(value: string): string | null {
+export function urlValidationHint(value: string | undefined | null): string | null {
+  if (!value) return null;
   const trimmed = value.trim();
   if (!trimmed) return null; // empty — no hint, just keep button disabled silently
   try {
@@ -69,7 +72,8 @@ export function urlValidationHint(value: string): string | null {
  *
  * Returns null if the value is not a valid http/https URL.
  */
-export function getBaseUrlForSitemapCrawl(value: string): string | null {
+export function getBaseUrlForSitemapCrawl(value: string | undefined | null): string | null {
+  if (!value) return null;
   const trimmed = value.trim();
   try {
     const u = new URL(trimmed);
