@@ -6,7 +6,7 @@ import { useTheme, tokens } from "@/lib/theme";
 import { isValidUrl, urlValidationHint, getBaseUrlForSitemapCrawl } from "@/lib/urlValidation";
 
 type Props = {
-  value: string;
+  value: string | undefined;
   onChange: (value: string) => void;
   onScan: () => void;
   onCancel: () => void;
@@ -179,10 +179,10 @@ export default function SitemapInput({
 
   const valid = isValidUrl(value);
   const disabled = loading || isScanning || !valid;
-  const hint = value.trim() ? urlValidationHint(value) : null;
+  const hint = value?.trim() ? urlValidationHint(value) : null;
   const baseUrl = valid ? getBaseUrlForSitemapCrawl(value) : null;
   const hasPath =
-    baseUrl !== null && value.trim().replace(/\/$/, "") !== baseUrl.replace(/\/$/, "");
+    baseUrl !== null && value?.trim().replace(/\/$/, "") !== baseUrl.replace(/\/$/, "");
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     onChange(e.target.value);
@@ -197,7 +197,7 @@ export default function SitemapInput({
           className="sitemap-url-input"
           type="text"
           placeholder="https://example.com"
-          value={value}
+          value={value || ""}
           onChange={handleChange}
           onKeyDown={(e) => e.key === "Enter" && !disabled && onScan()}
           disabled={loading || isScanning}

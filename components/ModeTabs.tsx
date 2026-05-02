@@ -9,6 +9,7 @@ type Props = { mode: Mode; onChange: (mode: Mode) => void; disabled?: boolean };
 const LABELS: Record<Mode, string> = {
   manual: "Manual_URLs",
   sitemap: "Sitemap_Crawl",
+  links: "Link_Checker",
 };
 
 const Wrap = styled.div`

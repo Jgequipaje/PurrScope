@@ -23,7 +23,7 @@ export type ScanResult = {
   attempts?: number; // how many extraction attempts were made
 };
 
-export type Mode = "manual" | "sitemap";
+export type Mode = "manual" | "sitemap" | "links";
 export type ResultFilter = "all" | "failed";
 
 // The three scan scope options shown in the UI dropdown
@@ -62,4 +62,70 @@ export type SitemapCrawlResult = {
   pageCount: number;
   sitemapCount: number;
   filter: FilterResult;
+};
+
+// ============================================================================
+// Link Checker Types
+// ============================================================================
+
+// Type of link found on a page
+export type LinkType = "internal" | "external" | "canonical";
+
+// Scope of links to validate
+export type LinkScope = "internal" | "all";
+
+// HTTP status classification for link validation
+export type LinkStatus =
+  | "success" // 2xx
+  | "redirect" // 3xx
+  | "client_error" // 4xx (except 403, 405, 429)
+  | "protected" // 403/405/999 - likely anti-bot or auth-required (link may exist)
+  | "server_error" // 5xx
+  | "rate_limited" // 429 - Too Many Requests
+  | "timeout"
+  | "unreachable";
+
+// Severity level for link issues
+export type LinkIssueSeverity = "error" | "warning";
+
+// A detected issue with a link
+export type LinkIssue = {
+  type: string; // e.g., "broken_link", "slow_response", "missing_noopener"
+  severity: LinkIssueSeverity;
+  message: string;
+};
+
+// Result of validating a single link
+export type LinkCheckResult = {
+  url: string;
+  linkType: LinkType;
+  status: LinkStatus;
+  statusCode: number | null;
+  responseTime: number; // milliseconds
+  redirectChain: string[]; // empty if no redirects
+  issues: LinkIssue[];
+  foundOn: string[]; // source page URLs where this link was found
+  finalUrl?: string; // after following redirects
+  error?: string;
+};
+
+// Request body for link validation API
+export type LinkValidationRequest = {
+  siteUrl: string;
+  pageUrls: string[]; // pages to scan for links
+  linkScope: LinkScope;
+  concurrency?: number; // default 5
+  timeout?: number; // default 10000ms
+};
+
+// Response from link validation API
+export type LinkValidationResponse = {
+  links: LinkCheckResult[];
+  summary: {
+    total: number;
+    working: number; // renamed from "passed" - links that are accessible
+    broken: number; // renamed from "failed" - links that don't work
+    warnings: number; // working links with issues (slow, missing attributes, etc.)
+  };
+  duration: number; // milliseconds
 };

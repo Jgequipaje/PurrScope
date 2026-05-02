@@ -14,7 +14,7 @@ import type { FilterResult, PageEntry, ScanScope } from "./types";
 /**
  * Returns true if the sitemap URL is a dynamic-pages sitemap (ends in -dpages.xml).
  */
-function isDPagesSitemap(sitemapUrl: string): boolean {
+export function isDPagesSitemap(sitemapUrl: string): boolean {
   try {
     const path = new URL(sitemapUrl).pathname;
     return path.endsWith("-dpages.xml");
@@ -26,7 +26,7 @@ function isDPagesSitemap(sitemapUrl: string): boolean {
 /**
  * Returns true if the sitemap URL is the static sitemap (sitemap-static.xml).
  */
-function isStaticSitemap(sitemapUrl: string): boolean {
+export function isStaticSitemap(sitemapUrl: string): boolean {
   try {
     const path = new URL(sitemapUrl).pathname;
     return path.endsWith("sitemap-static.xml");

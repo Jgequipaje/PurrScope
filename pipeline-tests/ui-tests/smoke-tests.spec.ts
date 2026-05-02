@@ -13,16 +13,17 @@ manualModeTest.describe("Manual Mode - Smoke Tests", () => {
       await manualModePage.inputURL(sampleURL);
       await expect(page.getByTestId("url-counter")).toHaveText("1 / 10 URLs");
       await manualModePage.startScan();
+      await manualModePage.waitForScanCompletion();
 
       // ASSERT: Verify results table appears with 1 row
       await expect(page.getByTestId("results-table")).toBeVisible();
       await expect(manualModePage.getResultRowLink()).toHaveCount(1);
 
-      // ASSERT: Both Title Status and Description Status show "Pass" (green pills)
+      // ASSERT: Both Title Status and Description Status show "Pass" or "Fail"
       await expect(tableUtils.findOnTable(sampleURL, "Title Status")).toHaveText(/^(Pass|Fail)$/);
       await expect(tableUtils.findOnTable(sampleURL, "Desc. Status")).toHaveText(/^(Pass|Fail)$/);
 
-      // ASSERT: Mascot Bubble Says All pages look great! ✅
+      // ASSERT: Mascot displays completion message
       await expect(page.getByText("All pages look great! ✅")).toBeVisible();
     }
   );
@@ -34,32 +35,35 @@ manualModeTest.describe("Manual Mode - Smoke Tests", () => {
       await page.goto("/");
       await expect(manualModePage.getManualButton()).toHaveClass(/active/i);
 
-      // ACT: Input multiple URL and scan
+      // ACT: Input multiple URLs and scan
       await manualModePage.inputURL(multipleURL.join("\n"));
       await expect(page.getByTestId("url-counter")).toHaveText(`${multipleURL.length} / 10 URLs`);
       await manualModePage.startScan();
+      await manualModePage.waitForScanCompletion();
 
-      // ASSERT: Verify results table appears with 3 rows
+      // ASSERT: Verify results table appears with all rows
       await expect(page.getByTestId("results-table")).toBeVisible();
-      await expect(manualModePage.getResultRowLink()).toHaveCount(3);
+      await expect(manualModePage.getResultRowLink()).toHaveCount(multipleURL.length);
 
       // ASSERT: Verify each row displays the correct URL
       for (const url of multipleURL) {
         await expect(manualModePage.getResultRowLink(url)).toBeVisible();
       }
 
-      // ASSERT: Both Title Status and Description Status show "Pass" (green pills)
+      // ASSERT: Both Title Status and Description Status show "Pass" or "Fail"
       for (const url of multipleURL) {
         await expect(tableUtils.findOnTable(url, "Title Status")).toHaveText(/^(Pass|Fail)$/);
         await expect(tableUtils.findOnTable(url, "Desc. Status")).toHaveText(/^(Pass|Fail)$/);
       }
 
-      // ASSERT: Mascot Bubble Says All pages look great! or Found some issues to fix
+      // ASSERT: Mascot displays completion message
       await expect(
         page.getByText(/^(All pages look great! ✅|Found some issues to fix ⚠️)$/)
       ).toBeVisible();
     }
   );
 
-  test("S03 — Sitemap Mode: Crawl and Discover @Smoke", async () => {});
+  test.skip("S03 — Sitemap Mode: Crawl and Discover @Smoke", async () => {
+    // TODO: Implement sitemap mode smoke test
+  });
 });

@@ -11,16 +11,34 @@ import ScopeSelector from "@/components/ScopeSelector";
 import ResultsTable from "@/components/ResultsTable";
 import RecentSearches from "@/components/RecentSearches";
 import Mascot, { type MascotState } from "@/components/Mascot";
+import PageSelector from "@/components/PageSelector";
+import LinkScopeSelector from "@/components/LinkScopeSelector";
+import LinkResultsTable from "@/components/LinkResultsTable";
 import { useTheme, tokens } from "@/lib/theme";
 import { loadHistory, saveHistory, addHistoryEntry, clearHistory } from "@/lib/history";
+import {
+  saveScanResults,
+  loadScanResults,
+  saveLinkResults,
+  loadLinkResults,
+  clearScanResults,
+  clearLinkResults,
+} from "@/lib/resultsCache";
 import { isValidUrl, normalizeUrlString, getBaseUrlForSitemapCrawl } from "@/lib/urlValidation";
 import { extractDynamicGroups } from "@/lib/sitemapGroups";
-import { computeClientFilter } from "@/lib/filter";
+import { computeClientFilter, isDPagesSitemap, isStaticSitemap } from "@/lib/filter";
 import BenchmarkComparisonTable from "@/components/BenchmarkComparisonTable";
 import { computeMetrics, createSnapshot } from "@/scan/benchmarkUtils";
 import type { HistoryEntry } from "@/lib/history";
 import type { TimerState } from "@/lib/duration";
-import type { ScanResult, Mode, SitemapCrawlResult, ScanScope } from "@/lib/types";
+import type {
+  ScanResult,
+  Mode,
+  SitemapCrawlResult,
+  ScanScope,
+  LinkCheckResult,
+  PageEntry,
+} from "@/lib/types";
 import type { ScanPipeline, PerformanceMode } from "@/scan/types";
 import { DEFAULT_PERFORMANCE_MODE, PERFORMANCE_CONFIGS } from "@/scan/types";
 import type { BenchmarkMetrics, BenchmarkRunMode, BenchmarkSnapshot } from "@/scan/benchmarkTypes";
@@ -258,6 +276,31 @@ export default function Home() {
   const [manualInput, setManualInput] = useState("");
   const [sitemapInput, setSitemapInput] = useState("");
 
+  // ── Link checker state ─────────────────────────────────────────────────────
+  const [linkSitemapInput, setLinkSitemapInput] = useState("");
+  const [linkCrawlResult, setLinkCrawlResult] = useState<SitemapCrawlResult | null>(null);
+  const [linkIsCrawling, setLinkIsCrawling] = useState(false);
+  const [linkCrawlError, setLinkCrawlError] = useState<string | null>(null);
+
+  // Page selection state
+  const [selectedPageScope, setSelectedPageScope] = useState<"all" | "static" | "dynamic">("all");
+  const [selectedDynamicGroups, setSelectedDynamicGroups] = useState<string[]>([]);
+
+  // Link scope state
+  const [selectedLinkScope, setSelectedLinkScope] = useState<"internal" | "all">("internal");
+
+  // Link scan state
+  const [linkScanResults, setLinkScanResults] = useState<LinkCheckResult[]>([]);
+  const [linkScanInProgress, setLinkScanInProgress] = useState(false);
+  const [linkScanError, setLinkScanError] = useState<string | null>(null);
+  const [linkScanTimer, setLinkScanTimer] = useState<TimerState>({ duration: null, status: null });
+
+  // AbortController refs for link checker
+  const linkCrawlAbortRef = useRef<AbortController | null>(null);
+  const linkScanAbortRef = useRef<AbortController | null>(null);
+  const linkScanSessionRef = useRef(0);
+  const linkScanStartRef = useRef<number | null>(null);
+
   // ── Phase 1: discovery state ───────────────────────────────────────────────
   // crawlResult is the source of truth for all discovered URLs.
   // It is only replaced when the user crawls a new URL — never on filter changes.
@@ -298,7 +341,7 @@ export default function Home() {
   // Session counter — incremented on each new scan so stale responses are ignored
   const scanSessionRef = useRef(0);
 
-  const isProcessing = isCrawling || isScanning;
+  const isProcessing = isCrawling || isScanning || linkIsCrawling || linkScanInProgress;
 
   // ── Derived state ──────────────────────────────────────────────────────────
   // liveFilter is computed instantly from crawlResult + scope + selectedGroups.
@@ -334,6 +377,49 @@ export default function Home() {
     setHistory(loadHistory());
   }, []);
 
+  // Load cached results when mode changes
+  useEffect(() => {
+    console.log("[useEffect] Mode changed to:", mode);
+
+    if (mode === "manual" || mode === "sitemap") {
+      const cached = loadScanResults(mode);
+      if (cached) {
+        console.log(
+          `[useEffect] Restoring ${mode} scan results:`,
+          cached.results.length,
+          "results"
+        );
+        setResults(cached.results);
+        setScanTimer(cached.timer);
+      } else {
+        console.log(`[useEffect] No cached ${mode} results, clearing state`);
+        // No cached results - clear state
+        setResults([]);
+        setScanTimer({ duration: null, status: null });
+      }
+    } else if (mode === "links") {
+      const cached = loadLinkResults();
+      if (cached) {
+        console.log("[useEffect] Restoring link results:", {
+          resultsCount: cached.results.length,
+          hasCrawlResult: !!cached.crawlResult,
+          sitemapInput: cached.sitemapInput,
+        });
+        setLinkScanResults(cached.results);
+        setLinkScanTimer(cached.timer);
+        setLinkCrawlResult(cached.crawlResult);
+        setLinkSitemapInput(cached.sitemapInput);
+      } else {
+        console.log("[useEffect] No cached link results, clearing state");
+        // No cached results - clear state
+        setLinkScanResults([]);
+        setLinkScanTimer({ duration: null, status: null });
+        setLinkCrawlResult(null);
+        setLinkSitemapInput("");
+      }
+    }
+  }, [mode]);
+
   function pushHistory(updated: HistoryEntry[]) {
     setHistory(updated);
     saveHistory(updated);
@@ -342,10 +428,12 @@ export default function Home() {
   function handleModeChange(next: Mode) {
     if (isProcessing) return;
     setMode(next);
-    // Only clear crawl state on mode switch, not on filter changes
+    // Clear crawl state on mode switch (but not link checker state - that's preserved in cache)
     setCrawlResult(null);
-    setResults([]);
     setError(null);
+    setLinkCrawlError(null);
+    setLinkScanError(null);
+    // Note: Don't clear results here - let useEffect load cached results
   }
 
   // Called only when the sitemap URL input changes — clears crawl + scan state
@@ -393,6 +481,8 @@ export default function Home() {
     setIsScanning(true);
     setResults([]);
     setError(null);
+    // Clear cached results when starting new scan
+    clearScanResults("manual");
     try {
       const { results: data } = await callScanApi(
         urls,
@@ -403,10 +493,13 @@ export default function Home() {
       );
       if (sessionId === scanSessionRef.current && !abort.signal.aborted) {
         setResults(data);
-        setScanTimer({
+        const timer = {
           duration: Date.now() - (scanStartRef.current ?? Date.now()),
-          status: "completed",
-        });
+          status: "completed" as const,
+        };
+        setScanTimer(timer);
+        // Save results to cache
+        saveScanResults("manual", data, timer);
       }
     } catch (e) {
       if ((e as Error).name === "AbortError") {
@@ -511,6 +604,8 @@ export default function Home() {
     setIsScanning(true);
     setResults([]);
     setError(null);
+    // Clear cached results when starting new scan
+    clearScanResults("sitemap");
     try {
       const apiRoute = pipeline === "improved" ? "/api/scan-improved" : "/api/scan";
       const perfMode = pipeline === "improved" ? performanceMode : undefined;
@@ -525,10 +620,13 @@ export default function Home() {
       if (sessionId === scanSessionRef.current && !abort.signal.aborted) {
         setResults(data);
         setPipelineUsed(pipeline);
-        setScanTimer({
+        const timer = {
           duration: Date.now() - (scanStartRef.current ?? Date.now()),
-          status: "completed",
-        });
+          status: "completed" as const,
+        };
+        setScanTimer(timer);
+        // Save results to cache
+        saveScanResults("sitemap", data, timer);
         setShowScopeControls(false);
         setScopeChangedAfterScan(false);
 
@@ -594,6 +692,171 @@ export default function Home() {
     setHistory([]);
   }
 
+  // ── Link checker handlers ──────────────────────────────────────────────────
+
+  // Called when the link sitemap URL input changes — clears crawl + scan state
+  function handleLinkSitemapUrlChange() {
+    setLinkCrawlResult(null);
+    setLinkScanResults([]);
+    setLinkCrawlError(null);
+    setLinkScanError(null);
+    setSelectedPageScope("all");
+    setSelectedDynamicGroups([]);
+    setSelectedLinkScope("internal");
+  }
+
+  // Sitemap crawl handler for link checker (Task 9.2)
+  async function handleLinkSitemapCrawl() {
+    if (!linkSitemapInput) return;
+    if (!isValidUrl(linkSitemapInput)) return;
+    const crawlUrl =
+      getBaseUrlForSitemapCrawl(linkSitemapInput) ?? normalizeUrlString(linkSitemapInput);
+    pushHistory(addHistoryEntry(history, "url", crawlUrl));
+
+    const abort = new AbortController();
+    linkCrawlAbortRef.current = abort;
+    setLinkIsCrawling(true);
+    setLinkCrawlResult(null);
+    setLinkScanResults([]);
+    setLinkCrawlError(null);
+    setLinkScanError(null);
+    setSelectedDynamicGroups([]);
+
+    try {
+      const res = await fetch("/api/sitemap", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: crawlUrl, scope: "all", excludePatterns: [] }),
+        signal: abort.signal,
+      });
+      const data: SitemapCrawlResult & { error?: string } = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Could not load sitemap.");
+      setLinkCrawlResult(data);
+    } catch (e) {
+      if ((e as Error).name !== "AbortError") {
+        setLinkCrawlError(e instanceof Error ? e.message : "Something went wrong.");
+      }
+    } finally {
+      setLinkIsCrawling(false);
+      linkCrawlAbortRef.current = null;
+    }
+  }
+
+  function handleCancelLinkCrawl() {
+    linkCrawlAbortRef.current?.abort();
+  }
+
+  // Derive dynamic groups from link crawl result
+  const linkDynamicGroups = useMemo(
+    () => extractDynamicGroups(linkCrawlResult?.sitemapUrls ?? []),
+    [linkCrawlResult]
+  );
+
+  // Get selected pages based on scope and groups
+  const selectedPagesForLinkScan = useMemo(() => {
+    if (!linkCrawlResult) return [];
+
+    const { pageUrls, pageEntries } = linkCrawlResult;
+
+    // Early return for "all" scope - no filtering needed
+    if (selectedPageScope === "all") {
+      return pageUrls;
+    }
+
+    if (selectedPageScope === "static") {
+      // Static pages are those from sitemap-static.xml
+      return pageEntries
+        .filter((entry) => isStaticSitemap(entry.sourceSitemap))
+        .map((entry) => entry.url);
+    }
+
+    if (selectedPageScope === "dynamic") {
+      if (selectedDynamicGroups.length === 0) {
+        // All dynamic pages - those from *-dpages.xml sitemaps
+        return pageEntries
+          .filter((entry) => isDPagesSitemap(entry.sourceSitemap))
+          .map((entry) => entry.url);
+      }
+
+      // Only pages from selected groups - match by sourceSitemap
+      const selectedSitemapUrls = new Set(selectedDynamicGroups);
+      return pageEntries
+        .filter((entry) => selectedSitemapUrls.has(entry.sourceSitemap))
+        .map((entry) => entry.url);
+    }
+
+    return [];
+  }, [linkCrawlResult, selectedPageScope, selectedDynamicGroups, linkDynamicGroups]);
+
+  // Link scan handler (Task 9.3)
+  async function handleLinkScan() {
+    if (!linkCrawlResult || selectedPagesForLinkScan.length === 0) return;
+
+    const abort = new AbortController();
+    linkScanAbortRef.current = abort;
+    const sessionId = ++linkScanSessionRef.current;
+    linkScanStartRef.current = Date.now();
+    setLinkScanTimer({ duration: null, status: null });
+    setLinkScanInProgress(true);
+    setLinkScanResults([]);
+    setLinkScanError(null);
+    // Clear cached results when starting new scan
+    clearLinkResults();
+
+    try {
+      const res = await fetch("/api/links", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          siteUrl: linkSitemapInput,
+          pageUrls: selectedPagesForLinkScan,
+          linkScope: selectedLinkScope,
+          concurrency: 5,
+          timeout: 10000,
+        }),
+        signal: abort.signal,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Link validation failed.");
+
+      if (sessionId === linkScanSessionRef.current && !abort.signal.aborted) {
+        setLinkScanResults(data.links);
+        const timer = {
+          duration: Date.now() - (linkScanStartRef.current ?? Date.now()),
+          status: "completed" as const,
+        };
+        setLinkScanTimer(timer);
+        // Save results to cache (including crawl result and sitemap input)
+        saveLinkResults(data.links, timer, linkCrawlResult, linkSitemapInput);
+      }
+    } catch (e) {
+      if ((e as Error).name === "AbortError") {
+        if (sessionId === linkScanSessionRef.current)
+          setLinkScanTimer({
+            duration: Date.now() - (linkScanStartRef.current ?? Date.now()),
+            status: "cancelled",
+          });
+      } else if (sessionId === linkScanSessionRef.current) {
+        setLinkScanTimer({
+          duration: Date.now() - (linkScanStartRef.current ?? Date.now()),
+          status: "failed",
+        });
+        setLinkScanError(e instanceof Error ? e.message : "Something went wrong.");
+      }
+    } finally {
+      if (sessionId === linkScanSessionRef.current) {
+        setLinkScanInProgress(false);
+        linkScanAbortRef.current = null;
+      }
+    }
+  }
+
+  // Scan cancellation handler (Task 9.4)
+  function handleLinkScanCancel() {
+    linkScanAbortRef.current?.abort();
+  }
+
   async function callScanApi(
     urls: string[],
     limit?: number,
@@ -623,7 +886,7 @@ export default function Home() {
 
   // Derive mascot state from current scan/results state
   const mascotState: MascotState =
-    isScanning || isCrawling
+    isScanning || isCrawling || linkIsCrawling || linkScanInProgress
       ? "scanning"
       : results.length > 0
         ? results.some(
@@ -635,7 +898,13 @@ export default function Home() {
           )
           ? "fail"
           : "pass"
-        : "idle";
+        : linkScanResults.length > 0
+          ? linkScanResults.some(
+              (r) => r.status !== "success" || r.issues.some((i) => i.severity === "error")
+            )
+            ? "fail"
+            : "pass"
+          : "idle";
 
   return (
     <Main data-testid="main-page" $color={t.text}>
@@ -774,9 +1043,159 @@ export default function Home() {
         </>
       )}
 
+      {mode === "links" && (
+        <>
+          {/* Phase 1: URL input + crawl button */}
+          <SitemapInput
+            value={linkSitemapInput}
+            onChange={setLinkSitemapInput}
+            onScan={handleLinkSitemapCrawl}
+            loading={linkIsCrawling}
+            onCancel={handleCancelLinkCrawl}
+            isScanning={linkScanInProgress}
+            onInputChange={handleLinkSitemapUrlChange}
+          />
+
+          {/* Phase 2: Page selection after successful crawl */}
+          {linkCrawlResult && (
+            <>
+              {/* Crawl summary */}
+              {linkScanResults.length === 0 && !linkScanInProgress && (
+                <CrawlSummary $bg={t.bgSubtle} $border={t.border} $color={t.textMuted}>
+                  <SummaryItem $accent={t.infoText}>
+                    <strong>{linkCrawlResult.pageCount}</strong> pages discovered
+                  </SummaryItem>
+                  <SummaryItem $accent={t.passText}>
+                    <strong>{selectedPagesForLinkScan.length}</strong> pages selected for scanning
+                  </SummaryItem>
+                </CrawlSummary>
+              )}
+
+              {/* Page selector */}
+              {linkScanResults.length === 0 && !linkScanInProgress && (
+                <PageSelector
+                  pageEntries={linkCrawlResult.pageEntries}
+                  dynamicGroups={linkDynamicGroups}
+                  selectedScope={selectedPageScope}
+                  selectedGroups={selectedDynamicGroups}
+                  onScopeChange={setSelectedPageScope}
+                  onGroupsChange={setSelectedDynamicGroups}
+                  disabled={isProcessing}
+                />
+              )}
+
+              {/* Link scope selector */}
+              {linkScanResults.length === 0 &&
+                !linkScanInProgress &&
+                selectedPagesForLinkScan.length > 0 && (
+                  <LinkScopeSelector
+                    scope={selectedLinkScope}
+                    onChange={setSelectedLinkScope}
+                    disabled={isProcessing}
+                  />
+                )}
+
+              {/* Scan button */}
+              {linkScanResults.length === 0 &&
+                !linkScanInProgress &&
+                selectedPagesForLinkScan.length > 0 && (
+                  <div style={{ marginBottom: "1.25rem" }}>
+                    <SecondaryBtn
+                      $border={t.accent}
+                      $color={t.accent}
+                      $bg="transparent"
+                      onClick={handleLinkScan}
+                      disabled={isProcessing}
+                    >
+                      Start Link Scan
+                    </SecondaryBtn>
+                  </div>
+                )}
+
+              {/* Progress indicator during scan (Task 9.5) */}
+              {linkScanInProgress && (
+                <div style={{ marginBottom: "1.25rem", textAlign: "center" }}>
+                  <div style={{ fontSize: "14px", color: t.textMuted, marginBottom: "8px" }}>
+                    Scanning {selectedPagesForLinkScan.length} page
+                    {selectedPagesForLinkScan.length !== 1 ? "s" : ""} for links...
+                  </div>
+                  <SecondaryBtn
+                    $border={t.border}
+                    $color={t.textMuted}
+                    $bg={t.bgMuted}
+                    onClick={handleLinkScanCancel}
+                  >
+                    Cancel Scan
+                  </SecondaryBtn>
+                </div>
+              )}
+
+              {/* Results table after scan completion */}
+              {linkScanResults.length > 0 && (
+                <>
+                  <ScanCompleteBanner $bg={t.successBg} $border={t.passText} $color={t.successText}>
+                    <span>Link scan complete — review the results below.</span>
+                    <ScanCompleteActions>
+                      <SecondaryBtn
+                        $border={t.accent}
+                        $color={t.accent}
+                        $bg="transparent"
+                        onClick={() => {
+                          setLinkScanResults([]);
+                          setLinkScanError(null);
+                        }}
+                      >
+                        Run New Scan
+                      </SecondaryBtn>
+                    </ScanCompleteActions>
+                  </ScanCompleteBanner>
+                  <LinkResultsTable results={linkScanResults} scanTimer={linkScanTimer} />
+                </>
+              )}
+            </>
+          )}
+
+          {/* Results table from cache (when crawl result is not available) */}
+          {!linkCrawlResult && linkScanResults.length > 0 && (
+            <>
+              <ScanCompleteBanner $bg={t.successBg} $border={t.passText} $color={t.successText}>
+                <span>Link scan complete — review the results below.</span>
+                <ScanCompleteActions>
+                  <SecondaryBtn
+                    $border={t.accent}
+                    $color={t.accent}
+                    $bg="transparent"
+                    onClick={() => {
+                      setLinkScanResults([]);
+                      setLinkScanError(null);
+                      clearLinkResults();
+                    }}
+                  >
+                    Run New Scan
+                  </SecondaryBtn>
+                </ScanCompleteActions>
+              </ScanCompleteBanner>
+              <LinkResultsTable results={linkScanResults} scanTimer={linkScanTimer} />
+            </>
+          )}
+        </>
+      )}
+
       {error && (
         <div data-testid="error-banner">
           <FriendlyError message={error} bg={t.failBg} color={t.failText} />
+        </div>
+      )}
+
+      {linkCrawlError && mode === "links" && (
+        <div data-testid="link-crawl-error-banner">
+          <FriendlyError message={linkCrawlError} bg={t.failBg} color={t.failText} />
+        </div>
+      )}
+
+      {linkScanError && mode === "links" && (
+        <div data-testid="link-scan-error-banner">
+          <FriendlyError message={linkScanError} bg={t.failBg} color={t.failText} />
         </div>
       )}
 
@@ -805,7 +1224,10 @@ export default function Home() {
           />
         )}
 
-      {results.length > 0 && <ResultsTable results={results} scanTimer={scanTimer} />}
+      {/* SEO scan results table - only show for manual and sitemap modes */}
+      {(mode === "manual" || mode === "sitemap") && results.length > 0 && (
+        <ResultsTable results={results} scanTimer={scanTimer} />
+      )}
 
       {/* Benchmark table hidden — set to true to re-enable */}
       {false && (benchPrevious || benchImproved) && (
