@@ -39,4 +39,12 @@ export class ManualModePage {
   async startScan(): Promise<void> {
     await this.submitButton.click();
   }
+
+  async waitForScanCompletion(timeoutMs: number = 30000): Promise<void> {
+    // Wait for scan to complete - button changes from "Cancel Scan" back to "Start Scan"
+    await this.page.getByTestId("cancel-manual-scan-btn").waitFor({ state: "visible" });
+    await this.page
+      .getByTestId("start-manual-scan-btn")
+      .waitFor({ state: "visible", timeout: timeoutMs });
+  }
 }

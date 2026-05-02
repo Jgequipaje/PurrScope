@@ -13,9 +13,10 @@ manualModeTest.describe("Manual Mode - Smoke Tests", () => {
       await manualModePage.inputURL(sampleURL);
       await expect(page.getByTestId("url-counter")).toHaveText("1 / 10 URLs");
       await manualModePage.startScan();
+      await manualModePage.waitForScanCompletion();
 
-      // ASSERT: Wait for scan to complete and results table to appear
-      await expect(page.getByTestId("results-table")).toBeVisible({ timeout: 30000 });
+      // ASSERT: Verify results table appears with 1 row
+      await expect(page.getByTestId("results-table")).toBeVisible();
       await expect(manualModePage.getResultRowLink()).toHaveCount(1);
 
       // ASSERT: Both Title Status and Description Status show "Pass" or "Fail"
@@ -38,9 +39,10 @@ manualModeTest.describe("Manual Mode - Smoke Tests", () => {
       await manualModePage.inputURL(multipleURL.join("\n"));
       await expect(page.getByTestId("url-counter")).toHaveText(`${multipleURL.length} / 10 URLs`);
       await manualModePage.startScan();
+      await manualModePage.waitForScanCompletion();
 
-      // ASSERT: Wait for scan to complete and results table to appear with all rows
-      await expect(page.getByTestId("results-table")).toBeVisible({ timeout: 30000 });
+      // ASSERT: Verify results table appears with all rows
+      await expect(page.getByTestId("results-table")).toBeVisible();
       await expect(manualModePage.getResultRowLink()).toHaveCount(multipleURL.length);
 
       // ASSERT: Verify each row displays the correct URL
