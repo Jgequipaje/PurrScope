@@ -12,15 +12,15 @@ describe("deduplicateLinks", () => {
     extractedLinksMap.set("https://example.com/page1", [
       {
         url: "https://example.com/about",
-        linkType: "internal",
-        sourceElement: "a",
+        linkType: "internal" as const,
+        sourceElement: "a" as const,
         linkText: "About Us",
         attributes: {},
       },
       {
         url: "https://example.com/contact",
-        linkType: "internal",
-        sourceElement: "a",
+        linkType: "internal" as const,
+        sourceElement: "a" as const,
         linkText: "Contact",
         attributes: {},
       },
@@ -29,8 +29,8 @@ describe("deduplicateLinks", () => {
     extractedLinksMap.set("https://example.com/page2", [
       {
         url: "https://example.com/about",
-        linkType: "internal",
-        sourceElement: "a",
+        linkType: "internal" as const,
+        sourceElement: "a" as const,
         linkText: "About",
         attributes: {},
       },
@@ -54,8 +54,8 @@ describe("deduplicateLinks", () => {
     extractedLinksMap.set("https://example.com/page1", [
       {
         url: "https://external.com",
-        linkType: "external",
-        sourceElement: "a",
+        linkType: "external" as const,
+        sourceElement: "a" as const,
         linkText: "External",
         attributes: {},
       },
@@ -64,8 +64,8 @@ describe("deduplicateLinks", () => {
     extractedLinksMap.set("https://example.com/page2", [
       {
         url: "https://external.com",
-        linkType: "external",
-        sourceElement: "a",
+        linkType: "external" as const,
+        sourceElement: "a" as const,
         linkText: "External Link",
         attributes: {},
       },
@@ -74,8 +74,8 @@ describe("deduplicateLinks", () => {
     extractedLinksMap.set("https://example.com/page3", [
       {
         url: "https://external.com",
-        linkType: "external",
-        sourceElement: "a",
+        linkType: "external" as const,
+        sourceElement: "a" as const,
         linkText: "External",
         attributes: {},
       },
@@ -97,15 +97,15 @@ describe("deduplicateLinks", () => {
     extractedLinksMap.set("https://example.com/page1", [
       {
         url: "https://example.com/about",
-        linkType: "internal",
-        sourceElement: "a",
+        linkType: "internal" as const,
+        sourceElement: "a" as const,
         linkText: "About",
         attributes: {},
       },
       {
         url: "https://external.com",
-        linkType: "external",
-        sourceElement: "a",
+        linkType: "external" as const,
+        sourceElement: "a" as const,
         linkText: "External",
         attributes: {},
       },
@@ -124,15 +124,15 @@ describe("deduplicateLinks", () => {
     extractedLinksMap.set("https://example.com/page1", [
       {
         url: "https://example.com/about",
-        linkType: "internal",
-        sourceElement: "a",
+        linkType: "internal" as const,
+        sourceElement: "a" as const,
         linkText: "About",
         attributes: {},
       },
       {
         url: "https://external.com",
-        linkType: "external",
-        sourceElement: "a",
+        linkType: "external" as const,
+        sourceElement: "a" as const,
         linkText: "External",
         attributes: {},
       },
@@ -412,8 +412,8 @@ describe("detectIssues", () => {
         extractedLinks: [
           {
             url: "https://external.com",
-            linkType: "external",
-            sourceElement: "a",
+            linkType: "external" as const,
+            sourceElement: "a" as const,
             linkText: "External",
             attributes: {}, // No target attribute
           },
@@ -448,8 +448,8 @@ describe("detectIssues", () => {
         extractedLinks: [
           {
             url: "https://external.com",
-            linkType: "external",
-            sourceElement: "a",
+            linkType: "external" as const,
+            sourceElement: "a" as const,
             linkText: "External",
             attributes: {
               target: "_blank",
@@ -487,8 +487,8 @@ describe("detectIssues", () => {
         extractedLinks: [
           {
             url: "https://external.com",
-            linkType: "external",
-            sourceElement: "a",
+            linkType: "external" as const,
+            sourceElement: "a" as const,
             linkText: "External",
             attributes: {
               target: "_blank",
@@ -730,8 +730,8 @@ describe("detectIssues", () => {
         extractedLinks: [
           {
             url: "https://example.com/page",
-            linkType: "internal",
-            sourceElement: "a",
+            linkType: "internal" as const,
+            sourceElement: "a" as const,
             linkText: "",
             attributes: {},
           },
@@ -766,8 +766,8 @@ describe("detectIssues", () => {
         extractedLinks: [
           {
             url: "https://example.com/page",
-            linkType: "internal",
-            sourceElement: "a",
+            linkType: "internal" as const,
+            sourceElement: "a" as const,
             linkText: "click here",
             attributes: {},
           },
@@ -802,8 +802,8 @@ describe("detectIssues", () => {
         extractedLinks: [
           {
             url: "https://example.com/page",
-            linkType: "internal",
-            sourceElement: "area",
+            linkType: "internal" as const,
+            sourceElement: "area" as const,
             linkText: "",
             attributes: {},
           },
@@ -839,8 +839,8 @@ describe("detectIssues", () => {
         extractedLinks: [
           {
             url: "https://example.com/page",
-            linkType: "internal",
-            sourceElement: "a",
+            linkType: "internal" as const,
+            sourceElement: "a" as const,
             linkText: longText,
             attributes: {},
           },
@@ -875,8 +875,8 @@ describe("detectIssues", () => {
         extractedLinks: [
           {
             url: "https://example.com/page",
-            linkType: "internal",
-            sourceElement: "a",
+            linkType: "internal" as const,
+            sourceElement: "a" as const,
             linkText: "",
             attributes: {
               ariaLabel: "Go to page",
@@ -918,8 +918,8 @@ describe("detectIssues", () => {
         extractedLinks: [
           {
             url: "http://staging.example.com/slow",
-            linkType: "external",
-            sourceElement: "a",
+            linkType: "external" as const,
+            sourceElement: "a" as const,
             linkText: "click here",
             attributes: {},
           },
